@@ -2217,7 +2217,7 @@ document.addEventListener('change',e=>{ const t=e.target; if(t.dataset.pkaflt){ 
 
 // ===== Trackman pitch data: sessions by date, from CSV uploads or typed in by a coach =====
 // Stored on the pitcher: st.tm = {sessions:{'YYYY-MM-DD':{src:'csv'|'manual'|'mixed', file, pitches:{FB:{n,v,mx,ivb,hb,spin,ext}}}}}
-// HB is stored arm-side positive (a lefty's Trackman HorzBreak is flipped) so righties and lefties read the same way.
+// HB is stored exactly as Trackman reports it (catcher's view): a lefty's fastball runs negative, a righty's positive.
 // Averages over a range count each session once: 85 on 11/24 and 83 on 12/1 average to 84.
 const TM_TYPE={fastball:'FB',fourseamfastball:'FB',fourseam:'FB','4seam':'FB',ff:'FB',fb:'FB',twoseamfastball:'2S',twoseam:'2S',sinker:'2S',si:'2S','2s':'2S',ft:'2S',
   cutter:'CT',ct:'CT',fc:'CT',slider:'SL',sl:'SL',sweeper:'SW',sw:'SW',st:'SW',curveball:'CB',curve:'CB',cb:'CB',cu:'CB',knucklecurve:'KC',kc:'KC',slurve:'CB',
@@ -2268,7 +2268,7 @@ function tmAggregate(list,throws){
   const by={}; list.forEach(p=>{ (by[p.t]=by[p.t]||[]).push(p); });
   const out={}; for(const t in by){ const L=by[t], lefty=(L[0].throws||throws)==='L';
     out[t]={n:L.length,v:r1(tmAvg(L.map(x=>x.v))),mx:r1(Math.max(...L.map(x=>x.v))),ivb:r1(tmAvg(L.map(x=>x.ivb))),
-      hb:r1(tmAvg(L.map(x=>x.hb==null?null:(lefty?-x.hb:x.hb)))),spin:(s=>s==null?null:Math.round(s))(tmAvg(L.map(x=>x.spin))),ext:r1(tmAvg(L.map(x=>x.ext)))}; }
+      hb:r1(tmAvg(L.map(x=>x.hb))),spin:(s=>s==null?null:Math.round(s))(tmAvg(L.map(x=>x.spin))),ext:r1(tmAvg(L.map(x=>x.ext)))}; }
   return out;
 }
 const tmSess=st=>(st.tm&&st.tm.sessions)||{};
@@ -2313,7 +2313,7 @@ function tmTrend(st,from,to){
   const keys=Object.keys(B).sort(), types=[...new Set(keys.flatMap(k=>Object.keys(B[k])))].sort((x,y)=>PITCH_ORDER.indexOf(x)-PITCH_ORDER.indexOf(y));
   return {keys,types,val:(k,t)=>B[k]&&B[k][t]?(m==='mx'?Math.max(...B[k][t]):tmAvg(B[k][t])):null};
 }
-const TM_MET={v:['Velo','mph'],mx:['Max velo','mph'],ivb:['IVB','in'],hb:['HB (arm side +)','in'],spin:['Spin','rpm']};
+const TM_MET={v:['Velo','mph'],mx:['Max velo','mph'],ivb:['IVB','in'],hb:['HB','in'],spin:['Spin','rpm']};
 function tmChartSVG(T){
   if(T.keys.length<2) return `<p class="hint">Pick a longer stretch to see a trend. There ${T.keys.length===1?'is one':'are no'} ${TMV.group==='day'?'day':TMV.group}${T.keys.length===1?'':'s'} with data here.</p>`;
   const W=600,H=230,L=44,R=12,Tp=14,Bt=30, vals=T.keys.flatMap(k=>T.types.map(t=>T.val(k,t))).filter(v=>v!=null);
@@ -2377,7 +2377,7 @@ function tmManHTML(){
     <div class="pk-grid"><div class="field"><label>Date</label><input type="date" data-tmm="date" value="${esc(M.date)}"></div>
       <div class="field"><label>Pitch</label><select data-tmm="t">${PITCH_ORDER.map(t=>`<option value="${t}" ${M.t===t?'selected':''}>${esc(PITCH_NAME[t]||t)}</option>`).join('')}</select></div></div>
     <div class="pk-srw tmman"><label><span>Velo (avg)</span><input type="text" inputmode="decimal" data-tmm="v" value="${esc(M.v||'')}" placeholder="85"></label><label><span>Max</span><input type="text" inputmode="decimal" data-tmm="mx" value="${esc(M.mx||'')}" placeholder="optional"></label>
-      <label><span>IVB</span><input type="text" inputmode="decimal" data-tmm="ivb" value="${esc(M.ivb||'')}" placeholder="optional"></label><label><span>HB (arm side +)</span><input type="text" inputmode="decimal" data-tmm="hb" value="${esc(M.hb||'')}" placeholder="optional"></label><label><span>Spin</span><input type="text" inputmode="numeric" data-tmm="spin" value="${esc(M.spin||'')}" placeholder="optional"></label></div>
+      <label><span>IVB</span><input type="text" inputmode="decimal" data-tmm="ivb" value="${esc(M.ivb||'')}" placeholder="optional"></label><label><span>HB (Trackman)</span><input type="text" inputmode="decimal" data-tmm="hb" value="${esc(M.hb||'')}" placeholder="optional"></label><label><span>Spin</span><input type="text" inputmode="numeric" data-tmm="spin" value="${esc(M.spin||'')}" placeholder="optional"></label></div>
     <div class="row pk-row"><button type="button" class="btn" data-tm="mansave">Save</button><span class="hint">Saves this pitch for that date. Other pitches that day stay as they are.</span></div></div>`;
 }
 function tmRerender(){ const b=document.getElementById('tmBox'); if(b) b.innerHTML=tmInner(S); }
@@ -2444,7 +2444,9 @@ const CLASS_BY_GRAD={2027:'SR',2028:'JR',2029:'SO',2030:'FR'};
 // p: [type, variation, IVB, HB]   s: fall stats   v: [starting mound velo, current mound velo]
 const CLEARY_ROSTER=[
   // TEST PITCHER: sample data so you can preview a pitcher's page. Delete this entry before real use.
-  {id:'test',n:'Test Pitcher',g:2028,h:'R',ht:73,wt:190,v:[84,86],p:[['FB','Standard 4 Seam',16.5,9.0],['SL','Gyro Slider',1.0,-2.0],['CH','Firm Change Up',11.0,14.0]],s:{sp:62,fps:60,csw:30,k:14,bb:5,baa:0.231},town:'Hartland, MI',hs:'Hartland HS',prev:''}
+  {id:'test',n:'Test Pitcher',g:2028,h:'R',ht:73,wt:190,v:[84,86.4],p:[['FB','Standard 4 Seam',16.0,10.1],['SL','Gyro Slider',1.4,-3.1],['CH','Firm Change Up',12.0,14.4]],s:{},town:'Hartland, MI',hs:'Hartland HS',prev:'',tm:{sessions:{"2026-11-10": {"src": "csv", "file": "trackman-sample.csv", "pitches": {"FB": {"n": 18, "v": 84.3, "mx": 86.5, "ivb": 16.0, "hb": 8.7, "spin": 2153, "ext": 6.2}, "SL": {"n": 8, "v": 75.2, "mx": 76.2, "ivb": 1.4, "hb": -4.0, "spin": 2293, "ext": 6.2}, "CH": {"n": 6, "v": 77.4, "mx": 80.2, "ivb": 11.0, "hb": 13.1, "spin": 1688, "ext": 6.2}}}, "2026-11-17": {"src": "csv", "file": "trackman-sample.csv", "pitches": {"FB": {"n": 18, "v": 85.5, "mx": 86.9, "ivb": 16.0, "hb": 10.0, "spin": 2168, "ext": 6.2}, "SL": {"n": 8, "v": 76.5, "mx": 77.7, "ivb": 0.4, "hb": -3.3, "spin": 2323, "ext": 6.2}, "CH": {"n": 6, "v": 79.0, "mx": 79.6, "ivb": 11.0, "hb": 15.2, "spin": 1686, "ext": 6.2}}}, "2026-11-24": {"src": "csv", "file": "trackman-sample.csv", "pitches": {"FB": {"n": 18, "v": 86.4, "mx": 88.1, "ivb": 16.0, "hb": 10.1, "spin": 2194, "ext": 6.2}, "SL": {"n": 8, "v": 76.7, "mx": 78.3, "ivb": 1.4, "hb": -3.1, "spin": 2205, "ext": 6.2}, "CH": {"n": 6, "v": 79.4, "mx": 81.0, "ivb": 12.0, "hb": 14.4, "spin": 1704, "ext": 6.2}}}}}},
+  // TEST LEFTY: sample left-handed pitcher (Trackman numbers read as Trackman reports them). Delete before real use.
+  {id:'test-l',n:'Test Lefty',g:2029,h:'L',ht:72,wt:180,v:[81,83.8],p:[['FB','Standard 4 Seam',15.6,-7.5],['CB','Curveball',-13.4,5.8],['CH','Standard CH',10.5,-15.0]],s:{},town:'Brighton, MI',hs:'Brighton HS',prev:'',tm:{sessions:{"2026-11-10": {"src": "csv", "file": "trackman-sample.csv", "pitches": {"FB": {"n": 16, "v": 82.3, "mx": 83.9, "ivb": 15.0, "hb": -8.2, "spin": 2104, "ext": 6.2}, "CB": {"n": 8, "v": 69.4, "mx": 70.6, "ivb": -13.3, "hb": 6.6, "spin": 2386, "ext": 6.2}, "CH": {"n": 6, "v": 75.3, "mx": 77.2, "ivb": 11.1, "hb": -15.6, "spin": 1657, "ext": 6.2}}}, "2026-11-17": {"src": "csv", "file": "trackman-sample.csv", "pitches": {"FB": {"n": 16, "v": 83.1, "mx": 86.3, "ivb": 15.5, "hb": -8.7, "spin": 2072, "ext": 6.2}, "CB": {"n": 8, "v": 70.3, "mx": 72.1, "ivb": -13.6, "hb": 7.4, "spin": 2327, "ext": 6.2}, "CH": {"n": 6, "v": 76.6, "mx": 77.5, "ivb": 10.6, "hb": -14.4, "spin": 1635, "ext": 6.2}}}, "2026-11-24": {"src": "csv", "file": "trackman-sample.csv", "pitches": {"FB": {"n": 16, "v": 83.8, "mx": 85.2, "ivb": 15.6, "hb": -7.5, "spin": 2016, "ext": 6.2}, "CB": {"n": 8, "v": 70.9, "mx": 71.8, "ivb": -13.4, "hb": 5.8, "spin": 2375, "ext": 6.2}, "CH": {"n": 6, "v": 77.0, "mx": 77.8, "ivb": 10.5, "hb": -15.0, "spin": 1720, "ext": 6.2}}}}}}
 ];
 const TEAM_FALL={sp:59,fps:58,k:210,bb:120,csw:29};
 const ROSTER_BY_ID=Object.fromEntries(CLEARY_ROSTER.map(r=>[r.id,r]));
@@ -2459,14 +2461,15 @@ function rosterArsenal(r){
         gv,gm,gn,pv,pm,pn, spin, eff, vr:vr||(sh?sh[1]:''), ivb:Math.round(ivb*10)/10, hb:Math.round(hb*10)/10};
     }).sort((x,y)=>PITCH_ORDER.indexOf(x.t)-PITCH_ORDER.indexOf(y.t));
   }
-  const fbv=r.v[1]||r.v[0];
+  const fbv=r.v[1]||r.v[0], tl=r.tm&&r.tm.sessions?r.tm.sessions[Object.keys(r.tm.sessions).sort().pop()].pitches:null;
+  if(tl) return Object.entries(tl).map(([t,x])=>{ const sh=r.p.find(y=>y[0]===t); return {t,v:x.v!=null?x.v.toFixed(1):'',mx:x.mx!=null?x.mx.toFixed(1):'',vr:sh?sh[1]:'',ivb:x.ivb,hb:x.hb,spin:x.spin,src:'tm'}; }).sort((x,y)=>PITCH_ORDER.indexOf(x.t)-PITCH_ORDER.indexOf(y.t));
   return r.p.map(([t,vr,ivb,hb])=>({t,v:t==='FB'&&fbv?String(fbv):'',vr,ivb,hb})).sort((x,y)=>PITCH_ORDER.indexOf(x.t)-PITCH_ORDER.indexOf(y.t));
 }
 // What a claimed profile writes into the pitcher's own settings (all of it stays editable).
 function rosterSettings(r){
   const fbv=r.v[1]||r.v[0], ars=rosterArsenal(r);
   return {pid:r.id,name:r.n,grade:CLASS_BY_GRAD[r.g]||null,grad:r.g||null,throws:r.h||null,ht:r.ht||null,wt:r.wt?String(r.wt):null,
-    track:r.track||null,program:null,velo:fbv?String(fbv):null,veloStart:r.v[0]?String(r.v[0]):null,town:r.town||'',hs:r.hs||'',prev:r.prev||'',arsenal:ars.length?ars:undefined};
+    track:r.track||null,program:null,tm:r.tm?JSON.parse(JSON.stringify(r.tm)):undefined,velo:fbv?String(fbv):null,veloStart:r.v[0]?String(r.v[0]):null,town:r.town||'',hs:r.hs||'',prev:r.prev||'',arsenal:ars.length?ars:undefined};
 }
 
 // Rapsodo arsenal, snapshot Oct 26, 2026, from the "Cleary Pitching Staff — Fall 2026" dashboard (each Individual Log's Game and Bullpen Rapsodo Numbers).
