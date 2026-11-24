@@ -1378,6 +1378,22 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
 .pk-editday{margin-left:auto}
 #progBody input[type=search],#progBody input[type=url],#sheetBody .pk-ed input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 11px;width:100%;color:inherit;font:inherit}
 #progBody .pk-vrow input[type=url]{width:auto}
+.pk-items li{grid-template-columns:minmax(160px,1fr) minmax(0,2fr) auto!important}
+@media (max-width:640px){ .pk-items li{grid-template-columns:minmax(0,1fr) auto!important} .pk-items .pk-srw{grid-column:1/-1;grid-row:2} }
+.pk-srw{display:grid;grid-template-columns:70px 110px minmax(0,1fr);gap:6px}
+.pk-srw label{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pk-srw span{font:600 10.5px var(--display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pk-srw input{padding:6px 8px!important}
+.pk-srw-big{grid-template-columns:90px 140px minmax(0,1fr)}
+.pk-addbox{margin-top:6px}
+.pk-pick2{display:flex;flex-direction:column;gap:10px;border:1px solid var(--accent);border-radius:12px;padding:12px;background:var(--surface)}
+.pk-pick2 input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 11px;width:100%;color:inherit;font:inherit}
+.pk-pick2 select{width:auto;max-width:100%}
+.pk-ares{display:flex;flex-direction:column;gap:4px;max-height:360px;overflow:auto}
+.pk-ares button{display:flex;justify-content:space-between;gap:10px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.pk-ares button:hover{border-color:var(--accent)}
+.pk-ares small{color:var(--muted);white-space:nowrap}
+.pk-wchips .pk-chip{font-size:12.5px;padding:4px 10px}
 </style>
 </head>
 <body>
@@ -1668,7 +1684,7 @@ function pkBase(a,k){
   return p;
 }
 function pkOpenEditor(id,k){
-  const a=C.athletes[id]; if(!a) return;
+  const a=C.athletes[id]; if(!a) return; if(PG.add) PG.add.ed=null;
   const p=planFor(a,k)||{kind:'off'}, e=pkDays(a)[k]||{};
   PG.ed={id,k,q:'',dr:{kind:p.kind||'off',pitches:pitchesOf(p)||'',preThrow:p.preThrow||'',plyo:p.plyo||'',post:p.post||'',cond:p.cond||'',
     drills:(e.drills||[]).map(x=>({...x})),setName:e.setName||'',note:e.note||''}};
@@ -1679,7 +1695,7 @@ function pkSaveDay(){
   if(dr.kind!==(b.kind||'off')) e.kind=dr.kind;
   if(PK_EVENT[dr.kind]&&(e.kind||(+dr.pitches||0)!==pitchesOf(b))) e.pitches=+dr.pitches||0;
   PK_FLD.forEach(([f])=>{ if(e.kind||(dr[f]||'')!==(b[f]||'')) e[f]=dr[f]||''; });
-  if(dr.drills.length){ e.drills=dr.drills.map(x=>({...x})); e.setName=(dr.setName||'').trim()||'Your drills'; }
+  if(dr.drills.length){ e.drills=dr.drills.map(pkClean); e.setName=(dr.setName||'').trim()||'Your drills'; }
   if(dr.note.trim()) e.note=dr.note.trim();
   pkSetDay(E.id,E.k,Object.keys(e).length?e:null);
   toast(Object.keys(e).length?`Saved. ${cvName(a.name)}'s app updates within a minute.`:`No changes from his plan.`);
@@ -1697,19 +1713,14 @@ function pkSearch(q,g,f,vid){
     words.every(w=>(d.n+' '+d.eq+' '+d.f+' '+d.t+' '+d.c+' '+d.x.join(' ')+' '+d.src).toLowerCase().includes(w)));
 }
 function pkItems(ctx){ return ctx==='ed'?(PG.ed&&PG.ed.dr.drills):ctx==='set'?(PG.set&&PG.set.items):ctx==='rt'?(PG.rt&&PG.rt.items):null; }
-function pkItemsHTML(items,ctx){
-  if(!items.length) return '<p class="hint">No drills yet. Search below to add some.</p>';
-  return `<ol class="pk-items">${items.map((x,i)=>{ const d=DL_BY[x.id]; return `<li><div class="pk-in"><b>${esc(x.n||(d&&d.n)||x.id)}</b><small>${esc([d?d.g:'',d&&d.f?d.f:'',(x.v||(d&&pkVid(d)))?'▶ video':'',(!d&&!x.v)?'no video':''].filter(Boolean).join(' · '))}</small></div>
-    <input type="text" class="pk-dose" data-pkdose="${ctx}:${i}" value="${esc(x.d||'')}" placeholder="Sets × reps" aria-label="Dose for ${esc(x.n||(d&&d.n)||'')}">
-    <span class="pk-ibtn"><button type="button" data-pkmv="${ctx}:${i}:-1" aria-label="Move up">↑</button><button type="button" data-pkmv="${ctx}:${i}:1" aria-label="Move down">↓</button><button type="button" data-pkrm="${ctx}:${i}" aria-label="Remove">✕</button></span></li>`; }).join('')}</ol>`;
-}
+
 function pkResHTML(ctx,q){
   if(!q||q.trim().length<2) return '';
   const r=pkSearch(q).slice(0,8);
   const own=ctx!=='set'?`<button type="button" data-pkaddown="${ctx}"><b>+ Add “${esc(q.trim())}” as its own drill</b><small>not in the library</small></button>`:'';
   return (r.length?'':'<p class="hint">No drills match.</p>')+r.map(d=>`<button type="button" data-pkadd="${ctx}:${d.id}"><b>${esc(d.n)}</b><small>${esc(d.g)}${d.f?' · '+esc(d.f):''}${pkVid(d)?' · ▶ video':''}</small></button>`).join('')+own;
 }
-function pkAddHTML(ctx,q){ return `<div class="pk-add"><input type="search" data-pkq="${ctx}" value="${esc(q||'')}" placeholder="Add a drill: type a name, tool or fault" autocomplete="off"><div class="pk-res" data-pkres="${ctx}">${pkResHTML(ctx,q)}</div></div>`; }
+
 const pkSel=(attr,cur,opts,none)=>`<select ${attr}>${none!==null?`<option value="">${none}</option>`:''}${opts.map(o=>{ const [v,l]=Array.isArray(o)?o:[o,o]; return `<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(l)}</option>`; }).join('')}</select>`;
 const pkStaff=()=>staff().sort((x,y)=>x.a.name.localeCompare(y.a.name));
 
@@ -1728,7 +1739,7 @@ function pkEditorHTML(inSheet){
     <div class="field"><label>Drills for this day</label>
       ${sets.length?`<div class="row pk-row">${pkSel('data-pkloadset','',sets.map(([id,s])=>[id,`${s.n} (${s.items.length})`]),'Load a drill set…')}</div>`:''}
       ${pkItemsHTML(dr.drills,'ed')}
-      ${pkAddHTML('ed',E.q)}
+      ${pkAddHTML('ed')}
       ${dr.drills.length?`<input type="text" data-pkf="setName" value="${esc(dr.setName)}" placeholder="Title on his page, e.g. Hip coil drills">`:''}
       ${dr.kind==='off'&&dr.drills.length?'<p class="hint">Off days show nothing on his page. Pick "No throw" if you want him to do these drills.</p>':''}
     </div>
@@ -1806,7 +1817,7 @@ function pkSetEdHTML(){
   const s=PG.set;
   return `<section class="panel stack"><div class="lrow pk-head"><h2 class="h2" style="font-size:22px">${s.id?'Edit':'New'} drill set</h2><button type="button" class="btn ghost sm" data-pk="closeset">Back</button></div>
     <div class="field"><label>Name</label><input type="text" data-pksetname value="${esc(s.n)}" placeholder="e.g. Hip coil series"></div>
-    <div class="field"><label>Drills</label>${pkItemsHTML(s.items,'set')}${pkAddHTML('set',s.q)}</div>
+    <div class="field"><label>Drills</label>${pkItemsHTML(s.items,'set')}${pkAddHTML('set')}</div>
     <div class="row pk-row"><button type="button" class="btn" data-pk="saveset">Save drill set</button>${s.id?'<button type="button" class="btn ghost" data-pk="delset">Delete</button>':''}</div>
     ${s.id?'<p class="hint">Changing a set doesn\'t change days you already assigned it to. Assign it again to update those days.</p>':''}
   </section>`;
@@ -1932,7 +1943,7 @@ document.addEventListener('click',e=>{
     L.push(ctx==='ed'?pkSnap({id}):ctx==='rt'?{id,n:d.n,d:d.d||'',v:pkVid(d)}:{id,d:(d&&d.d)||''});
     if(ctx==='ed'){ PG.ed.q=''; if(!PG.ed.dr.setName) PG.ed.dr.setName='Your drills'; } else if(ctx==='rt') PG.rt.q=''; else PG.set.q='';
     pkRefresh(); const inp=document.querySelector(`[data-pkq="${ctx}"]`); if(inp) inp.focus(); return; }
-  if((b=t.closest('[data-pkaddown]'))){ const ctx=b.dataset.pkaddown, L=pkItems(ctx), q=(ctx==='ed'?PG.ed.q:PG.rt.q).trim(); if(!L||!q) return; L.push({n:q,d:'',v:''}); if(ctx==='ed'){ PG.ed.q=''; if(!PG.ed.dr.setName) PG.ed.dr.setName='Your drills'; } else PG.rt.q=''; pkRefresh(); return; }
+  if((b=t.closest('[data-pkaddown]'))){ const ctx=b.dataset.pkaddown, L=pkItems(ctx), q=pkA(ctx).q.trim(); if(!L||!q) return; L.push({n:q,d:'',v:''}); if(ctx==='ed'&&!PG.ed.dr.setName) PG.ed.dr.setName='Your drills'; PG.add[ctx]=null; pkRefresh(); return; }
   if((b=t.closest('[data-pkrt]'))){ pkOpenRt(PG.rtWho,b.dataset.pkrt); renderPrograms(); const s=document.getElementById('pkRtEd'); if(s) s.scrollIntoView({behavior:'smooth',block:'start'}); return; }
   if((b=t.closest('[data-pkrm]'))){ const [ctx,i]=b.dataset.pkrm.split(':'); const L=pkItems(ctx); if(L){ L.splice(+i,1); pkRefresh(); } return; }
   if((b=t.closest('[data-pkmv]'))){ const [ctx,i,dir]=b.dataset.pkmv.split(':'); const L=pkItems(ctx), a=+i, c=a+(+dir); if(L&&c>=0&&c<L.length){ [L[a],L[c]]=[L[c],L[a]]; pkRefresh(); } return; }
@@ -1955,7 +1966,7 @@ document.addEventListener('click',e=>{
     case 'newset': PG.set={n:'',items:[],q:''}; PG.asg=null; renderPrograms(); break;
     case 'closeset': PG.set=null; renderPrograms(); break;
     case 'saveset': { const s=PG.set; if(!s.n.trim()){ toast('Give the drill set a name.'); return; } if(!s.items.length){ toast('Add at least one drill.'); return; }
-      const id=s.id||pkId(); L.sets[id]={n:s.n.trim(),items:s.items.map(x=>({id:x.id,d:x.d||''}))}; pkSaveLib(); PG.set=null; renderPrograms(); toast('Drill set saved.'); break; }
+      const id=s.id||pkId(); L.sets[id]={n:s.n.trim(),items:s.items.map(x=>({id:x.id,d:x.d||''}))}; PG.add.set=null; pkSaveLib(); PG.set=null; renderPrograms(); toast('Drill set saved.'); break; }
     case 'delset': { if(PG.set.id) delete L.sets[PG.set.id]; pkSaveLib(); PG.set=null; renderPrograms(); toast('Drill set deleted.'); break; }
     case 'newtpl': PG.tpl={n:'',days:Array.from({length:7},pkNewDay)}; PG.asg=null; renderPrograms(); break;
     case 'closetpl': PG.tpl=null; renderPrograms(); break;
@@ -2019,7 +2030,7 @@ function pkRowVid(routine,drill){ const r=pkMyRows(routine); const row=r&&r.find
 function pkBaseRows(name){ return (LIB[name]||[]).map(([n,d])=>{ let v=''; try{ v=pkBaseVid(name,n); }catch(e){} return {n,d,v}; }); }
 function pkBaseVid(name,n){ const prev=S; try{ S={...prev,coach:null,pid:null}; return vidFor(name,n)||''; } finally { S=prev; } }
 function pkRowsFor(a,name){ const r=pkRtOf(a)&&pkRtOf(a)[name]; return r?r.map(([n,d,v])=>({n,d,v:v||''})):pkBaseRows(name); }
-function pkOpenRt(id,name){ const a=C.athletes[id]; if(!a) return; PG.rt={id,name,items:pkRowsFor(a,name),q:'',copy:[]}; }
+function pkOpenRt(id,name){ const a=C.athletes[id]; if(!a) return; PG.add.rt=null; PG.rt={id,name,items:pkRowsFor(a,name),q:'',copy:[]}; }
 function pkRtHTML(){
   const list=pkStaff(); if(!list.length) return '<section class="panel"><p class="hint">No pitchers yet.</p></section>';
   if(!PG.rtWho||!C.athletes[PG.rtWho]) PG.rtWho=list[0].id;
@@ -2034,7 +2045,7 @@ function pkRtEdHTML(){
   const R=PG.rt, a=C.athletes[R.id], custom=!!(pkRtOf(a)&&pkRtOf(a)[R.name]), others=pkStaff().filter(x=>x.id!==R.id);
   return `<section class="panel stack" id="pkRtEd"><div class="lrow pk-head"><div><h2 class="h2" style="font-size:22px">${esc(R.name)} · ${esc(cvName(a.name))}</h2><p class="hint">${custom?'Custom for him. Reset to go back to the team baseline.':'Team baseline. Change anything below and save to make it his own.'}</p></div><button type="button" class="btn ghost sm" data-pk="closert">Close</button></div>
     ${pkItemsHTML(R.items,'rt')}
-    ${pkAddHTML('rt',R.q)}
+    ${pkAddHTML('rt')}
     <div class="row pk-row"><button type="button" class="btn" data-pk="savert">Save for ${esc(cvName(a.name))}</button>${custom?'<button type="button" class="btn ghost" data-pk="resetrt">Reset to baseline</button>':''}<button type="button" class="btn ghost" data-pk="basert">Load the baseline</button></div>
     ${others.length?`<details class="rt pk-copy"><summary><span class="rt-n"><b>Give this version to other pitchers too</b><small>Saves these same drills as their ${esc(R.name)}</small></span>${svg('chev','chev')}</summary><div class="rt-b pk-db">
       <div class="pk-who">${others.map(({id,a})=>`<label class="pk-chk"><input type="checkbox" data-pkcopy="${id}" ${R.copy.includes(id)?'checked':''}> ${esc(a.name)}${pkRtOf(a)&&pkRtOf(a)[R.name]?' <small class="hint">(custom)</small>':''}</label>`).join('')}</div>
@@ -2047,6 +2058,94 @@ function pkSaveRt(ids,rows){
     if(rows) R[PG.rt.name]=rows; else delete R[PG.rt.name]; a.coach.routinesAt=now; planCaches.delete(a); coachChanged(id); });
 }
 const pkRtRows=()=>PG.rt.items.filter(x=>(x.n||'').trim()).map(x=>[x.n.trim(),x.d||'',x.v||'']);
+
+// ---------- Drill rows: sets, reps, weight ----------
+const PK_W={
+  plyo:['Green','Blue','Red','Yellow','Gray','Blue/Red','Red/Yellow','Green/Blue'],
+  plyoG:['Green 1000g plyo ball','Blue 450g plyo ball','Red 225g plyo ball','Yellow 150g plyo ball','Gray 100g plyo ball'],
+  mb:['4 lbs','6 lbs','8 lbs','4-6 lbs','6-8 lbs','2 lbs (reverse throws only)'],
+  arm:['band','body weight','Red 225g plyo ball','Blue 450g plyo ball','Green 1000g plyo ball','2.5 lb','5 lb','10 lb','15 lb','20 lb']
+};
+document.body.insertAdjacentHTML('beforeend',`<div hidden>${Object.entries({plyo:PK_W.plyo,plyoG:PK_W.plyoG,mb:PK_W.mb,arm:PK_W.arm,any:[...PK_W.plyoG,...PK_W.mb,...PK_W.arm]}).map(([k,v])=>`<datalist id="pkW-${k}">${[...new Set(v)].map(x=>`<option value="${x}">`).join('')}</datalist>`).join('')}</div>`);
+// Which weights fit a row: by the drill's library category, else by the routine it's in
+function pkWKind(x,ctx){
+  const d=x&&x.id&&DL_BY[x.id], g=d?d.g:'', rn=ctx==='rt'&&PG.rt?PG.rt.name:'';
+  if(rn){ if(/^Plyo/.test(rn)) return 'plyo'; if(/^Pre-Throw/.test(rn)) return g==='Plyo'?'plyoG':g==='Water bag'||g==='CVB'?'':'mb'; return 'arm'; }
+  return g==='Plyo'?'plyoG':g==='Med ball'?'mb':g==='Arm care'?'arm':g==='Water bag'||g==='CVB'?'':'any';
+}
+// "3×12 · band" -> {s:'3', r:'12', w:'band'}; "x5 ea · Tidal Tank tube" -> {s:'', r:'5 ea', w:'Tidal Tank tube'}; anything else -> weight/notes
+function pkParse(dose){
+  const t=String(dose||'').trim(); if(!t) return {s:'',r:'',w:''};
+  const m=/^(\d*)\s*[×xX]\s*([^·]+?)\s*(?:·\s*(.*))?$/.exec(t);
+  return m?{s:m[1]||'',r:m[2].trim(),w:(m[3]||'').trim()}:{s:'',r:'',w:t};
+}
+function pkCompose(s,r,w){ s=String(s||'').trim(); r=String(r||'').trim(); w=String(w||'').trim();
+  const sr=s&&r?`${s}×${r}`:r?`x${r}`:s?`${s} sets`:''; return [sr,w].filter(Boolean).join(' · '); }
+function pkFields(x){ if(x._s===undefined){ const p=pkParse(x.d); x._s=p.s; x._r=p.r; x._w=p.w; } return x; }
+const pkClean=x=>Object.fromEntries(Object.entries(x).filter(([k])=>!k.startsWith('_')));
+function pkItemsHTML(items,ctx){
+  if(!items.length) return '<p class="hint">No drills yet. Tap "Add a drill" below.</p>';
+  return `<ol class="pk-items">${items.map((x,i)=>{ const d=DL_BY[x.id]; pkFields(x); const wk=pkWKind(x,ctx);
+    return `<li><div class="pk-in"><b>${esc(x.n||(d&&d.n)||x.id)}</b><small>${esc([d?d.g:'',d&&d.f?d.f:'',(x.v||(d&&pkVid(d)))?'▶ video':'',(!d&&!x.v)?'no video':''].filter(Boolean).join(' · '))}</small></div>
+    <div class="pk-srw"><label><span>Sets</span><input type="text" inputmode="numeric" data-pkdose="${ctx}:${i}:s" value="${esc(x._s)}" placeholder="3"></label>
+      <label><span>Reps</span><input type="text" data-pkdose="${ctx}:${i}:r" value="${esc(x._r)}" placeholder="10 or 5 ea"></label>
+      <label class="pk-w"><span>${wk?'Weight':'Notes'}</span><input type="text" data-pkdose="${ctx}:${i}:w" value="${esc(x._w)}" ${wk?`list="pkW-${wk}" placeholder="Pick or type"`:'placeholder="e.g. low fill, light band"'}></label></div>
+    <span class="pk-ibtn"><button type="button" data-pkmv="${ctx}:${i}:-1" aria-label="Move up">↑</button><button type="button" data-pkmv="${ctx}:${i}:1" aria-label="Move down">↓</button><button type="button" data-pkrm="${ctx}:${i}" aria-label="Remove">✕</button></span></li>`; }).join('')}</ol>`;
+}
+
+// ---------- Add-a-drill picker: search, category, fault, then sets/reps/weight ----------
+PG.add={};
+const pkA=ctx=>PG.add[ctx]=PG.add[ctx]||{open:false,q:'',g:'all',f:'',sel:null,s:'',r:'',w:''};
+function pkAddHTML(ctx){ return `<div class="pk-addbox" data-pkaddbox="${ctx}">${pkAddInner(ctx)}</div>`; }
+function pkAddInner(ctx){
+  const A=pkA(ctx);
+  if(!A.open) return `<button type="button" class="btn ghost" data-pkaopen="${ctx}">+ Add a drill</button>`;
+  if(A.sel){ const d=DL_BY[A.sel]||{n:A.sel,g:''}, wk=pkWKind({id:d.id},ctx);
+    return `<div class="pk-pick2"><div class="lrow"><div><b>${esc(d.n)}</b><small class="hint" style="display:block">${esc([d.g,d.f,d.d?'Library dose: '+d.d:''].filter(Boolean).join(' · '))}</small></div><button type="button" class="btn ghost sm" data-pkaback="${ctx}">Back to list</button></div>
+      <div class="pk-srw pk-srw-big"><label><span>Sets</span><input type="text" inputmode="numeric" data-pkaf="${ctx}:s" value="${esc(A.s)}" placeholder="3"></label>
+        <label><span>Reps</span><input type="text" data-pkaf="${ctx}:r" value="${esc(A.r)}" placeholder="10 or 5 ea"></label>
+        <label class="pk-w"><span>${wk?'Weight':'Notes'}</span><input type="text" data-pkaf="${ctx}:w" value="${esc(A.w)}" ${wk?`list="pkW-${wk}" placeholder="Pick or type"`:'placeholder="e.g. low fill, light band"'}></label></div>
+      ${wk?`<div class="chips pk-wchips">${(PK_W[wk]||[]).slice(0,8).map(v=>`<button type="button" class="pk-chip" data-pkwset="${ctx}" data-v="${esc(v)}" aria-pressed="${A.w===v}">${esc(v)}</button>`).join('')}</div>`:''}
+      <div class="row pk-row"><button type="button" class="btn" data-pkaadd="${ctx}">Add drill</button><button type="button" class="btn ghost" data-pkaclose="${ctx}">Cancel</button></div></div>`; }
+  return `<div class="pk-pick2">
+    <div class="lrow"><b>Add a drill</b><button type="button" class="btn ghost sm" data-pkaclose="${ctx}">Close</button></div>
+    <input type="search" data-pkaq="${ctx}" value="${esc(A.q)}" placeholder="Search (optional)" autocomplete="off">
+    <div class="chips">${['all',...DL_GROUPS].map(g=>`<button type="button" class="pk-chip" data-pkag="${ctx}" data-v="${g}" aria-pressed="${A.g===g}">${g==='all'?'All':g}</button>`).join('')}</div>
+    ${pkSel(`data-pkaflt="${ctx}"`,A.f,pkFaults(),'Any fault')}
+    <div class="pk-ares" data-pkares="${ctx}">${pkAresHTML(ctx)}</div></div>`;
+}
+function pkAresHTML(ctx){
+  const A=pkA(ctx), r=pkSearch(A.q,A.g,A.f);
+  const own=ctx!=='set'&&A.q.trim()?`<button type="button" data-pkaddown="${ctx}"><b>+ Add “${esc(A.q.trim())}” as its own drill</b><small>not in the library</small></button>`:'';
+  return `<p class="hint">${r.length} drill${r.length===1?'':'s'}${r.length>60?', showing 60. Narrow it with a category or fault.':''}</p>`+r.slice(0,60).map(d=>`<button type="button" data-pkasel="${ctx}:${d.id}"><b>${esc(d.n)}</b><small>${esc(d.g)}${d.f?' · '+esc(d.f):''}${pkVid(d)?' · ▶':''}</small></button>`).join('')+own;
+}
+function pkAddBox(ctx){ const box=document.querySelector(`[data-pkaddbox="${ctx}"]`); if(box) box.innerHTML=pkAddInner(ctx); }
+// Pre-fill from the library's dose text, e.g. "6-8 lb; 2 x 5" -> 2 sets, 5 reps, 6-8 lbs
+function pkGuess(t){ t=String(t||''); const m=/(\d+)(?:\s*-\s*\d+)?\s*[x×]\s*(\d+(?:-\d+)?(?:\s*ea)?)/i.exec(t); const w=/\d+(?:\.\d+)?(?:\s*-\s*\d+)?\s*(?:lbs?|kg|oz|g)\b|\bband\b|\bbody ?weight\b/i.exec(t);
+  return {s:m?m[1]:'',r:m?m[2]:'',w:w?w[0].replace(/\blb\b/i,'lbs'):''}; }
+function pkAddPicked(ctx){
+  const A=pkA(ctx), L=pkItems(ctx), d=DL_BY[A.sel]; if(!L||!d) return;
+  const dose=pkCompose(A.s,A.r,A.w), x=ctx==='ed'?{...pkSnap({id:d.id}),d:dose}:ctx==='rt'?{id:d.id,n:d.n,d:dose,v:pkVid(d)}:{id:d.id,d:dose};
+  L.push(x); if(ctx==='ed'&&!PG.ed.dr.setName) PG.ed.dr.setName='Your drills';
+  PG.add[ctx]={...A,sel:null,s:'',r:'',w:''}; pkRefresh(); toast(`${d.n} added.`);
+}
+document.addEventListener('click',e=>{
+  const t=e.target; let b;
+  if((b=t.closest('[data-pkaopen]'))){ const A=pkA(b.dataset.pkaopen); A.open=true; pkAddBox(b.dataset.pkaopen); return; }
+  if((b=t.closest('[data-pkaclose]'))){ PG.add[b.dataset.pkaclose]=null; pkAddBox(b.dataset.pkaclose); return; }
+  if((b=t.closest('[data-pkaback]'))){ pkA(b.dataset.pkaback).sel=null; pkAddBox(b.dataset.pkaback); return; }
+  if((b=t.closest('[data-pkag]'))){ pkA(b.dataset.pkag).g=b.dataset.v; pkAddBox(b.dataset.pkag); return; }
+  if((b=t.closest('[data-pkasel]'))){ const [ctx,id]=b.dataset.pkasel.split(':'), A=pkA(ctx), d=DL_BY[id]; A.sel=id; const p=pkGuess(d&&d.d); A.s=p.s; A.r=p.r; A.w=p.w; pkAddBox(ctx); const f=document.querySelector(`[data-pkaf="${ctx}:s"]`); if(f) f.focus(); return; }
+  if((b=t.closest('[data-pkwset]'))){ const ctx=b.dataset.pkwset; pkA(ctx).w=b.dataset.v; pkAddBox(ctx); return; }
+  if((b=t.closest('[data-pkaadd]'))){ pkAddPicked(b.dataset.pkaadd); return; }
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.pkaq){ const ctx=t.dataset.pkaq; pkA(ctx).q=t.value; const box=document.querySelector(`[data-pkares="${ctx}"]`); if(box) box.innerHTML=pkAresHTML(ctx); return; }
+  if(t.dataset.pkaf){ const [ctx,f]=t.dataset.pkaf.split(':'); pkA(ctx)[f]=t.value; return; }
+  if(t.dataset.pkdose&&t.dataset.pkdose.split(':').length===3){ const [ctx,i,f]=t.dataset.pkdose.split(':'), L=pkItems(ctx), x=L&&L[+i]; if(!x) return; pkFields(x); x['_'+f]=t.value; x.d=pkCompose(x._s,x._r,x._w); e.stopImmediatePropagation(); return; }
+},true);
+document.addEventListener('change',e=>{ const t=e.target; if(t.dataset.pkaflt){ pkA(t.dataset.pkaflt).f=t.value; pkAddBox(t.dataset.pkaflt); e.stopImmediatePropagation(); } },true);
 
 document.addEventListener('toggle',e=>{ const d=e.target; if(d.dataset&&d.dataset.pkopen){ if(d.open) PG.open=d.dataset.pkopen; else if(PG.open===d.dataset.pkopen) PG.open=null; } },true);
 
