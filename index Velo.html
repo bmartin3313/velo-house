@@ -1419,6 +1419,26 @@ body.pk-pitcher [data-hday]{cursor:default}
 #tab-daily-work .daywhy, #tab-daily-work #wWhy{display:none!important}
 #monthPanel{margin-top:4px}
 .pk-prof{margin-top:22px}
+
+/* Trackman pitch data */
+.tm{display:flex;flex-direction:column;gap:12px;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.tmup{cursor:pointer}
+.tmctl{display:flex;flex-direction:column;gap:8px}
+.tmd{display:inline-flex;align-items:center;gap:6px;font-size:14px}
+.tmd input,#tmDay{width:auto}
+.tmrl{margin:0;font-size:14px;color:var(--muted)} .tmrl b{color:var(--ink)}
+.tmcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.tmcard{border:1px solid var(--line);border-left:5px solid var(--pc);border-radius:12px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.tmct{display:flex;align-items:baseline;gap:8px} .tmct i{display:none} .tmct small{color:var(--muted);margin-left:auto;font-size:12.5px}
+.tmcard .dzc{min-width:54px;padding:4px 9px} .tmcard .dzc b{font-size:17px}
+.tmshape svg{max-width:320px}
+.tmtrend{display:flex;flex-direction:column;gap:8px}
+.tmchart{width:100%;height:auto;max-height:280px}
+.tmchart text{font-size:12px;fill:var(--muted)} .tmchart .g{stroke:var(--line);stroke-width:1}
+.tmleg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px} .tmleg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.tmrow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;border-bottom:1px solid var(--line);padding:6px 0}
+.tmman{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))!important}
+.tmimp .hint{line-height:1.6}
 </style>
 </head>
 <body>
@@ -2194,6 +2214,214 @@ document.addEventListener('input',e=>{
 },true);
 document.addEventListener('change',e=>{ const t=e.target; if(t.dataset.pkaflt){ pkA(t.dataset.pkaflt).f=t.value; pkAddBox(t.dataset.pkaflt); e.stopImmediatePropagation(); } },true);
 
+
+// ===== Trackman pitch data: sessions by date, from CSV uploads or typed in by a coach =====
+// Stored on the pitcher: st.tm = {sessions:{'YYYY-MM-DD':{src:'csv'|'manual'|'mixed', file, pitches:{FB:{n,v,mx,ivb,hb,spin,ext}}}}}
+// HB is stored arm-side positive (a lefty's Trackman HorzBreak is flipped) so righties and lefties read the same way.
+// Averages over a range count each session once: 85 on 11/24 and 83 on 12/1 average to 84.
+const TM_TYPE={fastball:'FB',fourseamfastball:'FB',fourseam:'FB','4seam':'FB',ff:'FB',fb:'FB',twoseamfastball:'2S',twoseam:'2S',sinker:'2S',si:'2S','2s':'2S',ft:'2S',
+  cutter:'CT',ct:'CT',fc:'CT',slider:'SL',sl:'SL',sweeper:'SW',sw:'SW',st:'SW',curveball:'CB',curve:'CB',cb:'CB',cu:'CB',knucklecurve:'KC',kc:'KC',slurve:'CB',
+  changeup:'CH',change:'CH',ch:'CH',splitter:'SP',split:'SP',splitfinger:'SP',fs:'SP',sp:'SP',knuckleball:'OT',other:'OT',ot:'OT'};
+const TM_COLS={date:['date','gamedate','sessiondate','utcdate','localdatetime','pitchdate'],pitcher:['pitcher','pitchername','player','playername','name'],
+  throws:['pitcherthrows','throws','hand'],type:['taggedpitchtype','pitchtype','tagged','autopitchtype','type'],
+  v:['relspeed','releasespeed','pitchspeed','speed','velocity','velo','startspeed'],ivb:['inducedvertbreak','inducedverticalbreak','inducedvertbreakin','ivb','inducedvbreak'],
+  hb:['horzbreak','horizontalbreak','hb','horzbreakin','horizbreak'],spin:['spinrate','totalspin','spin'],ext:['extension','ext']};
+const tmN=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const TMV={range:'8w',group:'week',metric:'v',from:'',to:'',date:'',imp:null,man:null};
+function tmParseCSV(text){
+  const rows=[]; let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){ const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q=true; else if(c===','){ row.push(f); f=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(f); rows.push(row); row=[]; f=''; }
+    else f+=c; }
+  if(f||row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r=>r.some(x=>String(x).trim()));
+}
+function tmDate(s){
+  s=String(s||'').trim(); if(!s) return ''; let m;
+  if((m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  if((m=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(s))){ const y=m[3].length===2?'20'+m[3]:m[3]; return `${y}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`; }
+  const d=new Date(s); return isNaN(d)?'':ymd(d);
+}
+const tmNum=x=>{ const v=parseFloat(String(x||'').replace(/[^0-9.\-]/g,'')); return isFinite(v)?v:null; };
+// Read a Trackman CSV into pitches: [{pitcher, date, t, v, ivb, hb, spin, ext, throws}]
+function tmRead(text){
+  const rows=tmParseCSV(text); if(rows.length<2) return {err:'That file has no rows.'};
+  const head=rows[0].map(tmN), col={};
+  for(const k in TM_COLS){ for(const a of TM_COLS[k]){ const i=head.indexOf(a); if(i>=0){ col[k]=i; break; } } }
+  if(col.type===undefined||col.v===undefined) return {err:'This doesn\'t look like a Trackman file. It needs a pitch type column (TaggedPitchType) and a velocity column (RelSpeed).'};
+  const out=[];
+  rows.slice(1).forEach(r=>{
+    let t=TM_TYPE[tmN(r[col.type])]; if((!t||t==='OT')&&col.type!==head.indexOf('autopitchtype')&&head.indexOf('autopitchtype')>=0){ const a=TM_TYPE[tmN(r[head.indexOf('autopitchtype')])]; if(a) t=a; }
+    const v=tmNum(r[col.v]); if(!t||v==null||v<30) return;
+    out.push({pitcher:col.pitcher!==undefined?String(r[col.pitcher]||'').trim():'',date:col.date!==undefined?tmDate(r[col.date]):'',t,v,
+      ivb:col.ivb!==undefined?tmNum(r[col.ivb]):null,hb:col.hb!==undefined?tmNum(r[col.hb]):null,spin:col.spin!==undefined?tmNum(r[col.spin]):null,
+      ext:col.ext!==undefined?tmNum(r[col.ext]):null,throws:col.throws!==undefined?String(r[col.throws]||'').trim().charAt(0).toUpperCase():''});
+  });
+  if(!out.length) return {err:'No pitches with a pitch type and velocity were found in that file.'};
+  return {pitches:out,hasDate:col.date!==undefined,hasPitcher:col.pitcher!==undefined,hasShape:col.ivb!==undefined&&col.hb!==undefined};
+}
+const tmAvg=a=>{ const v=a.filter(x=>x!=null); return v.length?v.reduce((s,x)=>s+x,0)/v.length:null; };
+const r1=x=>x==null?null:Math.round(x*10)/10;
+function tmAggregate(list,throws){
+  const by={}; list.forEach(p=>{ (by[p.t]=by[p.t]||[]).push(p); });
+  const out={}; for(const t in by){ const L=by[t], lefty=(L[0].throws||throws)==='L';
+    out[t]={n:L.length,v:r1(tmAvg(L.map(x=>x.v))),mx:r1(Math.max(...L.map(x=>x.v))),ivb:r1(tmAvg(L.map(x=>x.ivb))),
+      hb:r1(tmAvg(L.map(x=>x.hb==null?null:(lefty?-x.hb:x.hb)))),spin:(s=>s==null?null:Math.round(s))(tmAvg(L.map(x=>x.spin))),ext:r1(tmAvg(L.map(x=>x.ext)))}; }
+  return out;
+}
+const tmSess=st=>(st.tm&&st.tm.sessions)||{};
+const tmDates=st=>Object.keys(tmSess(st)).sort();
+// After any change: his current pitches and velo follow the newest session
+function tmSync(){
+  const ds=tmDates(S); if(!ds.length){ save(); return; }
+  const last=tmSess(S)[ds[ds.length-1]].pitches, cur=Object.fromEntries((S.arsenal||[]).map(a=>[a.t,a]));
+  Object.entries(last).forEach(([t,x])=>{ cur[t]={...(cur[t]||{t}),t,v:x.v!=null?x.v.toFixed(1):'',mx:x.mx!=null?x.mx.toFixed(1):'',ivb:x.ivb,hb:x.hb,spin:x.spin,eff:undefined,src:'tm'}; });
+  S.arsenal=Object.values(cur).sort((x,y)=>PITCH_ORDER.indexOf(x.t)-PITCH_ORDER.indexOf(y.t));
+  const fb=last.FB||last['2S']; if(fb&&fb.v!=null) S.velo=fb.v.toFixed(1);
+  save();
+}
+// ----- ranges and grouping -----
+function tmRange(st){
+  const ds=tmDates(st); if(!ds.length) return {from:'',to:'',label:''};
+  const last=ds[ds.length-1], back=n=>ymd(addDays(todayD,-n+1));
+  switch(TMV.range){
+    case 'date': { const d=TMV.date&&tmSess(st)[TMV.date]?TMV.date:last; return {from:d,to:d,label:cvFmt(d)}; }
+    case 'latest': return {from:last,to:last,label:`Latest session · ${cvFmt(last)}`};
+    case '2w': return {from:back(14),to:TODAY,label:'Last 2 weeks'};
+    case '4w': return {from:back(28),to:TODAY,label:'Last 4 weeks'};
+    case '8w': return {from:back(56),to:TODAY,label:'Last 8 weeks'};
+    case 'month': return {from:TODAY.slice(0,8)+'01',to:TODAY,label:'This month'};
+    case 'custom': { const f=TMV.from||ds[0], t=TMV.to||TODAY; return {from:f,to:t,label:`${cvFmt(f)} to ${cvFmt(t)}`}; }
+    default: return {from:ds[0],to:last,label:'All time'};
+  }
+}
+// One row per pitch type over the sessions in [from,to]: each session counts once
+function tmSummary(st,from,to){
+  const S2=tmSess(st), by={};
+  tmDates(st).filter(d=>d>=from&&d<=to).forEach(d=>{ Object.entries(S2[d].pitches||{}).forEach(([t,x])=>{ (by[t]=by[t]||[]).push(x); }); });
+  return Object.entries(by).map(([t,L])=>({t,sess:L.length,n:L.reduce((s,x)=>s+(x.n||0),0),v:r1(tmAvg(L.map(x=>x.v))),mx:r1(Math.max(...L.map(x=>x.mx!=null?x.mx:x.v).filter(x=>x!=null))),
+    ivb:r1(tmAvg(L.map(x=>x.ivb))),hb:r1(tmAvg(L.map(x=>x.hb))),spin:(s=>s==null?null:Math.round(s))(tmAvg(L.map(x=>x.spin)))}))
+    .sort((x,y)=>PITCH_ORDER.indexOf(x.t)-PITCH_ORDER.indexOf(y.t));
+}
+function tmBucket(d,g){ if(g==='day') return d; if(g==='month') return d.slice(0,7)+'-01'; return ymd(addDays(parse(d),-((parse(d).getDay()+6)%7))); }
+function tmBucketLbl(k,g){ const d=parse(k); return g==='month'?MON[d.getMonth()]+(d.getFullYear()!==todayD.getFullYear()?' '+String(d.getFullYear()).slice(2):''):`${d.getMonth()+1}/${d.getDate()}`; }
+function tmTrend(st,from,to){
+  const g=TMV.group, m=TMV.metric, S2=tmSess(st), B={};
+  tmDates(st).filter(d=>d>=from&&d<=to).forEach(d=>{ const k=tmBucket(d,g); Object.entries(S2[d].pitches||{}).forEach(([t,x])=>{ const v=m==='mx'?(x.mx!=null?x.mx:x.v):x[m]; if(v==null) return; ((B[k]=B[k]||{})[t]=B[k][t]||[]).push(v); }); });
+  const keys=Object.keys(B).sort(), types=[...new Set(keys.flatMap(k=>Object.keys(B[k])))].sort((x,y)=>PITCH_ORDER.indexOf(x)-PITCH_ORDER.indexOf(y));
+  return {keys,types,val:(k,t)=>B[k]&&B[k][t]?(m==='mx'?Math.max(...B[k][t]):tmAvg(B[k][t])):null};
+}
+const TM_MET={v:['Velo','mph'],mx:['Max velo','mph'],ivb:['IVB','in'],hb:['HB (arm side +)','in'],spin:['Spin','rpm']};
+function tmChartSVG(T){
+  if(T.keys.length<2) return `<p class="hint">Pick a longer stretch to see a trend. There ${T.keys.length===1?'is one':'are no'} ${TMV.group==='day'?'day':TMV.group}${T.keys.length===1?'':'s'} with data here.</p>`;
+  const W=600,H=230,L=44,R=12,Tp=14,Bt=30, vals=T.keys.flatMap(k=>T.types.map(t=>T.val(k,t))).filter(v=>v!=null);
+  let lo=Math.min(...vals), hi=Math.max(...vals); const pad=Math.max(1,(hi-lo)*0.15); lo=Math.floor(lo-pad); hi=Math.ceil(hi+pad);
+  const x=i=>L+(T.keys.length===1?0:i*(W-L-R)/(T.keys.length-1)), y=v=>Tp+(hi-v)/(hi-lo)*(H-Tp-Bt);
+  const ticks=[0,1,2,3,4].map(i=>lo+(hi-lo)*i/4);
+  const every=Math.ceil(T.keys.length/8);
+  const grid=ticks.map(v=>`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" class="g"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${TMV.metric==='spin'?Math.round(v):(Math.round(v*10)/10)}</text>`).join('')
+    +T.keys.map((k,i)=>i%every===0||i===T.keys.length-1?`<text x="${x(i)}" y="${H-10}" text-anchor="middle">${tmBucketLbl(k,TMV.group)}</text>`:'').join('');
+  const lines=T.types.map(t=>{ const pts=T.keys.map((k,i)=>[i,T.val(k,t)]).filter(p=>p[1]!=null); const c=P_COLOR[t]||'#888';
+    return `<polyline fill="none" stroke="${c}" stroke-width="2.5" points="${pts.map(([i,v])=>`${x(i)},${y(v)}`).join(' ')}"/>`+pts.map(([i,v])=>`<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="${c}"><title>${PITCH_NAME[t]||t} · ${tmBucketLbl(T.keys[i],TMV.group)}: ${TMV.metric==='spin'?Math.round(v):v.toFixed(1)} ${TM_MET[TMV.metric][1]}</title></circle>`).join(''); }).join('');
+  return `<svg class="tmchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${TM_MET[TMV.metric][0]} trend">${grid}${lines}</svg>
+    <div class="tmleg">${T.types.map(t=>`<span><i style="background:${P_COLOR[t]||'#888'}"></i>${esc(PITCH_NAME[t]||t)}</span>`).join('')}</div>`;
+}
+// ----- the section on his profile -----
+function tmBlock(st){ return `<div class="tm" id="tmBox">${tmInner(st)}</div>`; }
+function tmInner(st){
+  const ds=tmDates(st), coach=isCoachUser();
+  const tools=coach?`<div class="row pk-row"><label class="btn sm tmup">Upload Trackman CSV<input type="file" accept=".csv,text/csv" id="tmFile" hidden></label><button type="button" class="btn ghost sm" data-tm="man">+ Add numbers by hand</button></div>`:'';
+  const head=`<div class="lrow"><span class="lbl">Pitch data · Trackman</span>${ds.length?`<span class="hint">${ds.length} session${ds.length===1?'':'s'} · newest ${cvFmt(ds[ds.length-1])}</span>`:''}</div>`;
+  const panel=TMV.imp?tmImportHTML():TMV.man?tmManHTML():'';
+  if(!ds.length) return head+tools+panel+`<p class="hint">${coach?'No Trackman sessions yet. Upload a CSV after a bullpen or live, or add numbers by hand.':'No Trackman sessions yet. Your coach adds them after your bullpens and lives.'}</p>`+(shapesBlock(st)||'');
+  const rg=tmRange(st), sum=tmSummary(st,rg.from,rg.to), inRange=ds.filter(d=>d>=rg.from&&d<=rg.to);
+  const chip=(k,v,l,cur)=>`<button type="button" class="pk-chip" data-tm${k}="${v}" aria-pressed="${cur===v}">${l}</button>`;
+  return head+tools+panel+`
+    <div class="tmctl">
+      <div class="chips">${[['latest','Latest'],['2w','2 weeks'],['4w','4 weeks'],['8w','8 weeks'],['month','This month'],['all','All time'],['custom','Custom'],['date','One day']].map(([v,l])=>chip('r',v,l,TMV.range)).join('')}</div>
+      ${TMV.range==='custom'?`<div class="row pk-row"><label class="tmd">From <input type="date" id="tmFrom" value="${esc(rg.from)}"></label><label class="tmd">To <input type="date" id="tmTo" value="${esc(rg.to)}"></label></div>`:''}
+      ${TMV.range==='date'?`<div class="row pk-row"><select id="tmDay">${ds.slice().reverse().map(d=>`<option value="${d}" ${d===rg.from?'selected':''}>${cvFmt(d)} · ${Object.keys(tmSess(st)[d].pitches).length} pitch types</option>`).join('')}</select></div>`:''}
+    </div>
+    <p class="tmrl"><b>${esc(rg.label)}</b> · ${inRange.length} session${inRange.length===1?'':'s'}${inRange.length>1?' · averages count each session once':''}</p>
+    ${sum.length?`<div class="tmcards">${sum.map(a=>`<div class="tmcard" style="--pc:${P_COLOR[a.t]||'#888'}"><div class="tmct"><i></i><b>${esc(PITCH_NAME[a.t]||a.t)}</b><small>${a.n?a.n+' pitch'+(a.n===1?'':'es'):''}</small></div>
+      <div class="dz">${[['Velo',a.v!=null?a.v.toFixed(1):null,'dzw'],['Max',a.mx!=null&&isFinite(a.mx)?a.mx.toFixed(1):null],['IVB',a.ivb],['HB',a.hb],['Spin',a.spin]].filter(c=>c[1]!=null).map(([l,v,c])=>`<span class="dzc ${c||''}"><i>${l}</i><b>${esc(String(v))}</b></span>`).join('')}</div></div>`).join('')}</div>
+      <div class="shapes-g tmshape">${shapeSVG(sum.filter(a=>a.ivb!=null&&a.hb!=null),280)}</div>`:`<p class="hint">No sessions in this stretch.</p>`}
+    <div class="tmtrend"><div class="lrow"><span class="lbl">Trend</span></div>
+      <div class="chips">${Object.entries(TM_MET).map(([k,[l]])=>chip('met',k,l,TMV.metric)).join('')}</div>
+      <div class="chips">${[['day','Daily'],['week','Weekly'],['month','Monthly']].map(([v,l])=>chip('g',v,l,TMV.group)).join('')}</div>
+      ${tmChartSVG(tmTrend(st,TMV.range==='date'||TMV.range==='latest'?ds[0]:rg.from,TMV.range==='date'||TMV.range==='latest'?ds[ds.length-1]:rg.to))}
+      ${TMV.range==='date'||TMV.range==='latest'?'<p class="hint">Trend shows every session. Pick a stretch above to narrow it.</p>':''}
+    </div>
+    ${coach?`<details class="rt tmsess"><summary><span class="rt-n"><b>Sessions</b><small>${ds.length} saved · remove one if it was uploaded by mistake</small></span>${svg('chev','chev')}</summary><div class="rt-b pk-db">${ds.slice().reverse().map(d=>{ const s=tmSess(st)[d]; return `<div class="tmrow"><span><b>${cvFmt(d)}</b> · ${Object.keys(s.pitches).map(t=>PITCH_CODE[t]||t).join(', ')}${s.src==='manual'?' · typed in':s.file?' · '+esc(s.file):''}</span><button type="button" class="btn ghost sm" data-tmdel="${d}">Remove</button></div>`; }).join('')}</div></details>`:''}`;
+}
+function tmImportHTML(){
+  const I=TMV.imp, names=I.names;
+  return `<div class="pk-pick2 tmimp"><div class="lrow"><b>Import ${esc(I.file)}</b><button type="button" class="btn ghost sm" data-tm="cancel">Cancel</button></div>
+    ${names.length>1?`<div class="field"><label>Which pitcher in this file is ${esc(cvName(S.name||'him'))}?</label><select id="tmWho">${names.map(([n,c])=>`<option value="${esc(n)}" ${n===I.who?'selected':''}>${esc(n)} (${c} pitches)</option>`).join('')}</select></div>`:''}
+    ${!I.hasDate?`<div class="field"><label>Date of this session</label><input type="date" id="tmImpDate" value="${esc(I.date||TODAY)}"></div>`:''}
+    <p class="hint">${tmImpPreview()}</p>
+    ${!I.hasShape?'<p class="hint">This file has no break columns, so only velocity will be saved.</p>':''}
+    <div class="row pk-row"><button type="button" class="btn" data-tm="import">Save to ${esc(cvName(S.name||'his'))}'s profile</button></div></div>`;
+}
+function tmImpRows(){ const I=TMV.imp; return I.pitches.filter(p=>!I.names.length||I.names.length===1||p.pitcher===I.who).map(p=>({...p,date:p.date||I.date||TODAY})); }
+function tmImpPreview(){
+  const rows=tmImpRows(), by={}; rows.forEach(p=>{ (by[p.date]=by[p.date]||[]).push(p); });
+  const have=tmSess(S);
+  return Object.keys(by).sort().map(d=>{ const ag=tmAggregate(by[d],S.throws); return `<b>${cvFmt(d)}</b>: ${by[d].length} pitches (${Object.entries(ag).map(([t,x])=>`${PITCH_CODE[t]||t} ${x.v!=null?x.v.toFixed(1):''}`).join(', ')})${have[d]?' · replaces what is saved for that day':''}`; }).join('<br>')||'No pitches for this pitcher in the file.';
+}
+function tmManHTML(){
+  const M=TMV.man;
+  return `<div class="pk-pick2"><div class="lrow"><b>Add numbers by hand</b><button type="button" class="btn ghost sm" data-tm="cancel">Cancel</button></div>
+    <div class="pk-grid"><div class="field"><label>Date</label><input type="date" data-tmm="date" value="${esc(M.date)}"></div>
+      <div class="field"><label>Pitch</label><select data-tmm="t">${PITCH_ORDER.map(t=>`<option value="${t}" ${M.t===t?'selected':''}>${esc(PITCH_NAME[t]||t)}</option>`).join('')}</select></div></div>
+    <div class="pk-srw tmman"><label><span>Velo (avg)</span><input type="text" inputmode="decimal" data-tmm="v" value="${esc(M.v||'')}" placeholder="85"></label><label><span>Max</span><input type="text" inputmode="decimal" data-tmm="mx" value="${esc(M.mx||'')}" placeholder="optional"></label>
+      <label><span>IVB</span><input type="text" inputmode="decimal" data-tmm="ivb" value="${esc(M.ivb||'')}" placeholder="optional"></label><label><span>HB (arm side +)</span><input type="text" inputmode="decimal" data-tmm="hb" value="${esc(M.hb||'')}" placeholder="optional"></label><label><span>Spin</span><input type="text" inputmode="numeric" data-tmm="spin" value="${esc(M.spin||'')}" placeholder="optional"></label></div>
+    <div class="row pk-row"><button type="button" class="btn" data-tm="mansave">Save</button><span class="hint">Saves this pitch for that date. Other pitches that day stay as they are.</span></div></div>`;
+}
+function tmRerender(){ const b=document.getElementById('tmBox'); if(b) b.innerHTML=tmInner(S); }
+document.addEventListener('click',e=>{
+  const t=e.target; let b;
+  if(!t.closest('#tmBox')) return;
+  if((b=t.closest('[data-tmr]'))){ TMV.range=b.dataset.tmr; tmRerender(); return; }
+  if((b=t.closest('[data-tmg]'))){ TMV.group=b.dataset.tmg; tmRerender(); return; }
+  if((b=t.closest('[data-tmmet]'))){ TMV.metric=b.dataset.tmmet; tmRerender(); return; }
+  if((b=t.closest('[data-tmdel]'))){ if(!isCoachUser()) return; const d=b.dataset.tmdel; delete S.tm.sessions[d]; tmSync(); tmRerender(); toast(`Removed ${cvFmt(d)}.`); return; }
+  if((b=t.closest('[data-tm]'))){ const a=b.dataset.tm;
+    if(a==='cancel'){ TMV.imp=null; TMV.man=null; tmRerender(); return; }
+    if(a==='man'){ TMV.imp=null; TMV.man={date:TODAY,t:'FB'}; tmRerender(); return; }
+    if(a==='mansave'){ const M=TMV.man, v=tmNum(M.v); if(!M.date){ toast('Pick a date.'); return; } if(v==null){ toast('Enter the velocity.'); return; }
+      S.tm=S.tm||{sessions:{}}; S.tm.sessions=S.tm.sessions||{}; const s=S.tm.sessions[M.date]=S.tm.sessions[M.date]||{src:'manual',pitches:{}};
+      if(s.src==='csv') s.src='mixed';
+      s.pitches[M.t]={n:(s.pitches[M.t]&&s.pitches[M.t].n)||0,v:r1(v),mx:r1(tmNum(M.mx)!=null?tmNum(M.mx):v),ivb:r1(tmNum(M.ivb)),hb:r1(tmNum(M.hb)),spin:tmNum(M.spin)!=null?Math.round(tmNum(M.spin)):null,m:true};
+      TMV.man=null; tmSync(); tmRerender(); toast(`Saved ${PITCH_NAME[M.t]||M.t} for ${cvFmt(M.date)}.`); return; }
+    if(a==='import'){ const I=TMV.imp, rows=tmImpRows(); if(!rows.length){ toast('No pitches for that pitcher in the file.'); return; }
+      const by={}; rows.forEach(p=>{ (by[p.date]=by[p.date]||[]).push(p); });
+      S.tm=S.tm||{sessions:{}}; S.tm.sessions=S.tm.sessions||{};
+      Object.entries(by).forEach(([d,L])=>{ S.tm.sessions[d]={src:'csv',file:I.file,at:new Date().toISOString(),pitches:tmAggregate(L,S.throws)}; });
+      TMV.imp=null; TMV.range=Object.keys(by).length===1?'latest':TMV.range; tmSync(); tmRerender(); toast(`Saved ${rows.length} pitches from ${Object.keys(by).length} session${Object.keys(by).length===1?'':'s'}.`); return; }
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target; if(!t.closest('#tmBox')) return;
+  if(t.id==='tmFile'){ const f=t.files&&t.files[0]; if(!f) return; const rd=new FileReader();
+    rd.onload=()=>{ const R=tmRead(String(rd.result||'')); if(R.err){ toast(R.err); return; }
+      const cnt={}; R.pitches.forEach(p=>{ if(p.pitcher) cnt[p.pitcher]=(cnt[p.pitcher]||0)+1; });
+      const names=Object.entries(cnt).sort((x,y)=>y[1]-x[1]);
+      const last=String(S.name||'').trim().split(/\s+/).pop().toLowerCase(), first=String(S.name||'').trim().split(/\s+/)[0].toLowerCase();
+      const guess=(names.find(([n])=>n.toLowerCase().includes(last)&&n.toLowerCase().includes(first))||names.find(([n])=>last&&n.toLowerCase().includes(last))||names[0]||[''])[0];
+      TMV.man=null; TMV.imp={file:f.name,pitches:R.pitches,names,who:guess,hasDate:R.hasDate&&R.pitches.some(p=>p.date),hasShape:R.hasShape,date:TODAY}; tmRerender(); };
+    rd.readAsText(f); t.value=''; return; }
+  if(t.id==='tmWho'){ TMV.imp.who=t.value; tmRerender(); return; }
+  if(t.id==='tmImpDate'){ TMV.imp.date=t.value; tmRerender(); return; }
+  if(t.id==='tmDay'){ TMV.date=t.value; tmRerender(); return; }
+  if(t.id==='tmFrom'){ TMV.from=t.value; tmRerender(); return; }
+  if(t.id==='tmTo'){ TMV.to=t.value; tmRerender(); return; }
+  if(t.dataset.tmm&&TMV.man){ TMV.man[t.dataset.tmm]=t.value; if(t.tagName==='SELECT') tmRerender(); return; }
+});
+document.addEventListener('input',e=>{ const t=e.target; if(t.closest('#tmBox')&&t.dataset.tmm&&TMV.man&&t.tagName==='INPUT') TMV.man[t.dataset.tmm]=t.value; });
+
 document.addEventListener('toggle',e=>{ const d=e.target; if(d.dataset&&d.dataset.pkopen){ if(d.open) PG.open=d.dataset.pkopen; else if(PG.open===d.dataset.pkopen) PG.open=null; } },true);
 
 </script>
@@ -2245,7 +2473,7 @@ function rosterSettings(r){
 // [type, variation, game avg, game max, game pitches, pen avg, pen max, pen pitches, spin, IVB, HB, spin eff %]
 const RAPSODO={"retchko":[["FB","Standard 4 Seam",79.6,84.5,8,79.8,84.1,6,2016,17.1,7.6,91],["SL","Gyro Slider",74.9,76.7,7,73.9,77.2,6,2019,0.9,1.7,25],["CH","Firm Change Up",76.2,79.3,4,76.1,79.5,6,1771,11.6,7.0,70]],"tobias":[["FB","Deadzone FB",88.3,90.2,10,84.9,88.2,5,2141,14.0,17.1,99],["2S","Running SNK",null,null,0,82.1,82.7,1,2128,12.7,20.2,100],["SL","Gyro/Standard SL",75.5,77.7,10,74.0,76.9,5,2033,-2.4,-1.3,25],["CH","Standard CH",81.4,83.1,10,78.5,81.8,4,1783,9.0,15.7,98],["SP","",null,null,0,77.3,77.9,1,1502,8.4,20.2,99]],"roberts":[["FB","Standard 4 Seam",78.4,81.5,2,77.4,80.7,1,1974,16.1,-9.6,88],["SL","Slurve",71.5,75.6,2,67.4,74.6,3,2078,-2.0,10.1,23],["CB","Gyro Curveball",68.4,69.8,2,null,null,0,2004,-5.4,1.8,35],["CH","Standard/Firm Change Up",73.8,73.9,1,71.7,76.4,3,1386,10.9,-7.6,90]],"sindlinger":[["FB","Gyro Fastball",83.2,85.9,10,82.3,84.1,4,2378,7.0,5.5,50],["CT","",81.6,84.0,3,null,null,0,2288,8.3,3.9,48],["SL","Slutter",76.5,79.6,10,75.3,77.6,4,2345,-4.1,-5.0,27],["CH","Firm Change-Up",77.6,80.6,4,78.5,81.3,4,1662,6.1,10.3,83]],"zaborny":[["FB","Standard 4 Seam",80.3,84.0,4,77.9,81.3,5,1775,15.7,12.0,95],["SL","Slurve",69.5,71.0,2,67.8,69.3,3,1813,-6.3,-11.1,55],["CB","Downer",68.0,69.5,3,65.3,68.8,5,1759,-14.3,-7.7,79],["CH","Firm Copy-Cat",75.1,75.8,2,72.2,74.8,5,1270,12.3,8.9,91]],"amico":[["FB","Standard 4 Seam",86.2,89.4,8,84.2,87.8,7,2013,16.4,7.4,91],["SL","Standard Slider",75.1,79.4,7,74.5,78.0,7,2051,-2.4,-8.4,40],["CB","",null,null,0,72.7,72.7,1,2004,-6.1,-10.5,56],["CH","Standard/Firm Copy-Cat",79.9,82.2,5,79.5,82.1,6,1504,11.9,13.1,94]],"bloink":[["FB","Sinker",79.7,82.6,6,78.5,81.3,6,1951,10.1,19.5,97],["SL","Standard Slider",71.9,73.1,5,70.7,72.5,4,2204,-11.0,-7.2,51],["CB","",71.3,72.4,3,70.3,72.9,3,2262,-12.4,-9.8,57],["CH","Kick Change",71.5,73.7,4,71.2,72.7,5,1382,-3.1,14.5,94]],"stanaway":[["FB","Deadzone/Running FB",82.6,85.4,8,82.4,84.6,6,2070,16.5,13.2,99],["SL","Standard Slider",73.3,77.3,8,73.6,76.7,6,2079,2.8,-7.7,28],["CB","Standard Curveball",72.4,73.0,7,72.0,73.1,2,1949,-11.6,-7.3,60],["CH","Firm Change Up",77.9,79.2,4,77.2,78.3,6,1714,8.2,18.0,99]],"langdon":[["FB","Standard 4 Seam",75.2,81.5,8,74.5,80.0,6,1746,16.4,6.4,85],["CT","",80.9,80.9,1,75.2,76.5,2,1261,12.7,4.5,82],["SL","",64.0,69.0,3,65.7,68.1,5,2017,-8.2,-4.3,38],["CB","Inefficient Downer",64.3,67.9,5,66.4,76.5,2,2038,-10.2,-5.2,49],["CH","Firm/Standard CH",68.5,73.3,4,68.8,72.0,4,1514,14.5,10.4,94]],"montilla":[["FB","Inefficient FB/Standard 4 Seam",87.6,89.5,10,84.5,88.0,7,2220,15.4,6.3,83],["SL","Slurve/Standard Slider",76.7,78.5,4,72.8,78.0,6,2289,-2.8,-10.4,44],["CB","Standard Curveball",72.6,74.6,9,69.4,72.6,5,2239,-12.2,-13.5,72],["CH","Firm Copycat",79.8,82.8,4,79.3,81.7,7,1774,12.7,15.4,86]],"siik":[["FB","Running Fastball",83.5,86.7,5,79.9,83.8,6,2014,13.9,13.9,95],["2S","Running Sinker",null,null,0,80.4,81.3,3,1826,10.0,20.2,99],["SL","Gyro Slider",74.8,80.5,5,72.2,76.9,6,1767,-1.0,-1.6,17],["CH","Firm Change-Up",null,null,0,76.3,79.3,5,1807,8.5,17.9,92]],"noseworthy":[["FB","Running FB/Deadzone FB",82.7,83.7,3,81.7,84.0,4,2046,12.2,-13.8,91],["SL","Slurve",72.7,73.8,3,72.4,74.1,4,1780,-6.0,12.2,44],["CH","Firm Change Up",null,null,0,77.6,80.0,3,1681,3.2,-9.4,93]],"mcnicol":[["FB","Running/Deadzone FB",82.8,85.0,3,82.3,85.3,3,2064,15.4,11.9,91],["SL","Standard/Gyro SL",74.3,76.9,3,75.2,76.6,3,2170,-0.4,-5.9,30],["CB","",70.1,70.4,1,72.1,73.8,3,2379,-10.4,-11.1,57],["CH","Firm Copy Cat",76.4,77.0,2,78.6,81.8,3,1240,11.4,12.2,89]],"schertzer":[["FB","",82.8,84.7,1,81.9,82.5,1,2002,16.5,3.4,84],["SL","",72.4,75.0,1,null,null,0,1946,-3.8,-3.8,30],["CB","",null,null,0,72.2,73.5,1,1662,12.3,-2.1,64],["CH","",71.3,71.3,1,null,null,0,1153,12.9,7.2,95]],"hurliman":[["FB","Standard 4 Seam",77.5,81.6,9,75.9,79.2,5,1746,13.9,7.1,89],["2S","Deadzone",74.5,74.5,1,73.3,73.3,1,1670,14.7,11.4,86],["SL","Standard Slider",69.1,72.8,8,65.8,69.5,5,1976,1.4,-8.3,40],["CB","",64.7,64.7,1,63.2,63.2,1,2094,-10.8,-14.7,71],["CH","Firm Copy Cat",72.6,74.1,4,71.1,73.6,5,1517,11.2,10.5,93],["SP","",null,null,0,66.8,66.8,1,501,1.0,-13.8,18]],"nicholson":[["FB","Deadzone FB/Standard FB",80.3,82.6,7,79.4,81.4,6,1998,15.8,8.5,85],["CT","",75.1,75.6,1,78.2,79.2,1,2111,9.9,3.2,46],["SL","Standard Slider",74.3,76.9,7,71.5,75.3,6,2092,2.1,-6.9,30],["CH","",null,null,0,72.2,73.2,2,526,3.3,2.5,79],["SP","Standard/Tumble Splitter",74.0,75.4,6,72.0,74.9,4,512,2.2,1.8,63]],"chimeri":[["FB","Deadzone FB/Standard 4 Seam",80.2,82.7,4,79.8,81.8,2,1729,13.8,10.9,91],["CB","Downer",69.6,72.1,4,68.2,70.9,2,1897,-14.5,-8.1,80],["CH","Firm Change Up",76.2,76.5,2,75.4,78.7,2,1393,9.5,7.7,97]],"arbogast":[["FB","",74.6,77.0,9,71.1,72.2,2,1730,13.1,1.3,73],["CT","Standard Cutter",75.9,77.9,2,70.3,71.1,2,1750,13.1,2.0,64],["SL","Slurve/Standard SL",68.3,73.2,8,65.6,69.5,3,1686,-1.9,-5.5,37],["CH","Firm Change Up",null,null,0,70.2,71.7,3,1652,15.4,9.9,91]],"harmsworth":[["FB","Standard/Deadzone FB",86.8,89.9,9,84.1,87.3,6,2191,16.0,13.0,93],["2S","Running FB",83.6,84.5,3,83.3,85.0,3,1973,12.6,15.9,89],["CT","",81.5,81.5,1,82.1,83.1,2,2134,10.5,6.9,68],["SL","",82.5,82.8,1,null,null,0,2072,10.7,-8.4,82],["CB","Downer/Efficient CB",72.8,74.8,9,71.1,73.4,6,1841,-16.3,-11.5,85],["CH","Firm/Standard CH",78.2,80.2,4,77.7,80.2,6,1663,7.4,17.0,95]],"murray":[["FB","Sinker",75.8,78.9,5,72.4,76.0,3,1646,9.7,-14.3,84],["SL","Slurve",67.3,78.7,5,63.5,65.6,3,2043,-5.4,11.3,46],["CB","",70.4,77.1,1,null,null,0,1631,-10.1,-0.6,73],["CH","Firm Change Up",null,null,0,68.2,70.7,3,1244,4.0,-6.7,62],["SP","Tumbling/Traditional SPL",null,null,0,66.8,69.0,2,548,-0.8,1.5,77]],"miano":[["FB","Deadzone FB",82.0,85.4,10,80.3,83.3,5,1867,12.5,12.5,94],["CT","",78.6,78.6,1,null,null,0,2741,14.9,15.7,73],["SL","Gyro Slider",74.2,78.0,10,71.1,76.2,5,1826,1.5,-1.8,17],["SP","Standard/Tumble SPL",73.7,83.6,4,70.2,72.9,5,532,-3.3,3.4,95]],"jelleyreid":[["FB","",75.5,77.0,1,76.0,78.3,1,1848,12.8,3.2,71],["SL","",null,null,0,67.5,67.7,1,2383,-9.6,-16.9,47]]};
 // Made-up numbers for the test profile (not a real pitcher)
-RAPSODO.test=[['FB','',85.4,88.0,6,84.1,86.1,5,2105,16.2,9.8,92],['SL','',76.3,78.4,6,75.0,77.2,5,2240,-1.8,-7.4,34],['CB','',71.2,73.0,4,70.1,72.5,4,2310,-12.4,-8.1,71],['CH','',78.0,80.1,5,77.2,79.6,5,1640,10.3,14.2,93]];
+const RAPSODO_TEST_UNUSED=[['FB','',85.4,88.0,6,84.1,86.1,5,2105,16.2,9.8,92],['SL','',76.3,78.4,6,75.0,77.2,5,2240,-1.8,-7.4,34],['CB','',71.2,73.0,4,70.1,72.5,4,2310,-12.4,-8.1,71],['CH','',78.0,80.1,5,77.2,79.6,5,1640,10.3,14.2,93]];
 
 // ===== CLEARY: profile picker, bio, fall stats and pitch shapes =====
 const P_COLOR={FB:'#D23B3B','2S':'#E8862A',CT:'#9A6B3F',SL:'#E8B10C',SW:'#C9A100',CB:'#3D7BD9',KC:'#5B5FD6',CH:'#2E9B5F',SP:'#1FA3A3',OT:'#888'};
@@ -2257,6 +2485,7 @@ function bioLine(st){
   return bits.length?bits.map(esc).join(' · '):'';
 }
 function statsStrip(st,compact){
+  return '';   // fall stats are not used in this version
   const r=rosterOf(st); if(!r) return '';
   const s=r.s, cell=(l,v,t,sub)=>v==null?'':`<div title="${esc(t||'')}"><span>${l}</span><b>${v}${sub&&!compact?`<small> team ${sub}</small>`:''}</b></div>`;
   const P=v=>v==null?null:v+'%';
@@ -2273,7 +2502,7 @@ function shapeSVG(ars,w){
 }
 function shapesBlock(st){
   const ars=(st.arsenal||[]).filter(a=>a.ivb!=null); if(!ars.length) return '';
-  return `<div class="shapes"><div class="lrow"><span class="lbl">Pitch shapes</span><span class="hint">Rapsodo · fall 2026</span></div>
+  return `<div class="shapes"><div class="lrow"><span class="lbl">Pitch shapes</span><span class="hint">From his profile</span></div>
     <div class="shapes-g">${shapeSVG(ars,280)}<div class="shape-l">${ars.map(a=>`<div><i style="background:${P_COLOR[a.t]||'#888'}"></i><b>${esc(PITCH_NAME[a.t]||a.t)}</b><span>${a.v?`<b class="lv">${esc(a.v)}</b> mph${a.mx?` · max ${esc(a.mx)}`:''} · `:''}${a.ivb} IVB · ${a.hb} HB${a.spin?` · ${a.spin} rpm`:''}${a.eff!=null?` · ${a.eff}% eff`:''}</span></div>`).join('')}</div></div></div>`;
 }
 const gradTxt=st=>st.grad?`Class of ${st.grad}`:'';
@@ -2290,13 +2519,12 @@ function profileCard(){
     <div class="pnums">${numCell('Height','ht',fmtHt(S.ht))}${numCell('Weight','wt',S.wt?`${esc(S.wt)}<small> lb</small>`:'')}${num('Throws',S.throws?(S.throws==='L'?'Left':'Right'):'')}</div>
     <div class="velo">
       <div class="vnum">${tv?`<b>${esc(tv)}</b><small>mph</small>`:'<b class="none">—</b>'}</div>
-      <div class="vmeta"><span class="lbl">Mound velo${S.veloStart&&tv&&+S.veloStart!==+tv?` · started fall at ${esc(S.veloStart)} (${(+tv-+S.veloStart>0?'+':'')+(+tv-+S.veloStart).toFixed(1)})`:''}</span><div class="vbar"><i style="width:${pctv}%"></i></div><div class="vticks"><small>60</small><small>70</small><small>80</small><small>90+</small></div></div>
+      <div class="vmeta"><span class="lbl">Mound velo${tmDates(S).length?` · fastball avg, ${esc(cvFmt(tmDates(S).slice(-1)[0]))} Trackman`:''}</span><div class="vbar"><i style="width:${pctv}%"></i></div><div class="vticks"><small>60</small><small>70</small><small>80</small><small>90+</small></div></div>
     </div>
-    <div class="arsenal"><div class="lrow"><span class="lbl">Pitches</span>${ars.length?`<span class="hint">${ars.some(a=>a.mx)?'Rapsodo avg · max':ars.length+' pitch'+(ars.length===1?'':'es')}</span>`:''}</div>
+    ${tmDates(S).length?'':`<div class="arsenal"><div class="lrow"><span class="lbl">Pitches</span>${ars.length?`<span class="hint">${ars.length+' pitch'+(ars.length===1?'':'es')}</span>`:''}</div>
       ${ars.length?`<div class="pills">${ars.map(a=>`<span class="pitch"><b>${esc(PITCH_NAME[a.t]||a.t)}</b>${a.v?`<i>${esc(a.v)}<small> mph</small></i>`:''}${a.mx?`<em class="pmx">max ${esc(a.mx)}</em>`:''}</span>`).join('')}</div>`:`<button type="button" class="linkbtn" data-editprof>+ Add pitches</button>`}
-    </div>
-    ${statsStrip(S)}
-    ${shapesBlock(S)}
+    </div>`}
+    ${tmBlock(S)}
     </div>
   </section>`;
 }
