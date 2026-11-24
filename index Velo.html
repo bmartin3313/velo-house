@@ -1394,6 +1394,17 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
 .pk-ares button:hover{border-color:var(--accent)}
 .pk-ares small{color:var(--muted);white-space:nowrap}
 .pk-wchips .pk-chip{font-size:12.5px;padding:4px 10px}
+.dlist{display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.drow{display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.drow-n{font-size:15.5px;line-height:1.3}
+.drow-n a.vid{font-size:15.5px}
+.dz{display:flex;flex-wrap:wrap;gap:6px}
+.dzc{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:64px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:5px 11px}
+.dzc i{font:700 10.5px var(--display);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.dzc b{font:700 19px/1.15 var(--display);letter-spacing:.02em;color:var(--ink)}
+.dzw{border-color:var(--accent)} .dzw b{color:var(--accent)}
+.dzn b{font:600 15px/1.3 var(--body)}
+#sheetBody .dz{margin:6px 0 10px}
 </style>
 </head>
 <body>
@@ -1667,7 +1678,7 @@ function pkDrillStep(p,k){
   return `<details class="rt ${done?'is-done':''}" data-name="${esc(name)}">
     <summary><button type="button" class="tick" data-tick="${esc(name)}" aria-pressed="${done}" aria-label="Mark ${esc(name)} ${done?'not done':'done'}">${svg('check')}</button>
       <span class="rt-n"><b>${esc(name)}</b><small>From your coach · ${p.cdrills.length} drill${p.cdrills.length===1?'':'s'} · ${nv} video${nv===1?'':'s'}</small></span>${svg('chev','chev')}</summary>
-    <div class="rt-b"><table>${p.cdrills.map(x=>`<tr><td>${x.v?`<a class="vid" href="${esc(x.v)}" target="_blank" rel="noopener noreferrer" data-drill="${esc(x.n)}" data-reps="${esc(x.d||'')}" data-routine="${esc(name)}"><span class="play" aria-hidden="true"></span>${esc(x.n)}</a>`:`<b>${esc(x.n)}</b>`}${x.c?`<small class="pk-cue">${esc(x.c)}</small>`:''}</td><td class="n">${esc(x.d||'')}</td></tr>`).join('')}</table></div>
+    <div class="rt-b"><div class="dlist">${p.cdrills.map(x=>`<div class="drow"><div class="drow-n">${x.v?`<a class="vid" href="${esc(x.v)}" target="_blank" rel="noopener noreferrer" data-drill="${esc(x.n)}" data-reps="${esc(x.d||'')}" data-routine="${esc(name)}"><span class="play" aria-hidden="true"></span>${esc(x.n)}</a>`:`<b>${esc(x.n)}</b>`}${x.c?`<small class="pk-cue">${esc(x.c)}</small>`:''}</div>${pkDoseHTML(x.d)}</div>`).join('')}</div></div>
   </details>`;
 }
 
@@ -2061,10 +2072,10 @@ const pkRtRows=()=>PG.rt.items.filter(x=>(x.n||'').trim()).map(x=>[x.n.trim(),x.
 
 // ---------- Drill rows: sets, reps, weight ----------
 const PK_W={
-  plyo:['Green','Blue','Red','Yellow','Gray','Blue/Red','Red/Yellow','Green/Blue'],
-  plyoG:['Green 1000g plyo ball','Blue 450g plyo ball','Red 225g plyo ball','Yellow 150g plyo ball','Gray 100g plyo ball'],
+  plyo:['1000g','450g','225g','150g','100g','450g/225g','225g/150g','1000g/450g'],
+  plyoG:['1000g','450g','225g','150g','100g'],
   mb:['4 lbs','6 lbs','8 lbs','4-6 lbs','6-8 lbs','2 lbs (reverse throws only)'],
-  arm:['band','body weight','Red 225g plyo ball','Blue 450g plyo ball','Green 1000g plyo ball','2.5 lb','5 lb','10 lb','15 lb','20 lb']
+  arm:['band','body weight','225g','450g','1000g','2.5 lbs','5 lbs','10 lbs','15 lbs','20 lbs']
 };
 document.body.insertAdjacentHTML('beforeend',`<div hidden>${Object.entries({plyo:PK_W.plyo,plyoG:PK_W.plyoG,mb:PK_W.mb,arm:PK_W.arm,any:[...PK_W.plyoG,...PK_W.mb,...PK_W.arm]}).map(([k,v])=>`<datalist id="pkW-${k}">${[...new Set(v)].map(x=>`<option value="${x}">`).join('')}</datalist>`).join('')}</div>`);
 // Which weights fit a row: by the drill's library category, else by the routine it's in
@@ -2075,9 +2086,26 @@ function pkWKind(x,ctx){
 }
 // "3×12 · band" -> {s:'3', r:'12', w:'band'}; "x5 ea · Tidal Tank tube" -> {s:'', r:'5 ea', w:'Tidal Tank tube'}; anything else -> weight/notes
 function pkParse(dose){
-  const t=String(dose||'').trim(); if(!t) return {s:'',r:'',w:''};
+  const t=pkGrams(String(dose||'').trim()); if(!t) return {s:'',r:'',w:''};
   const m=/^(\d*)\s*[×xX]\s*([^·]+?)\s*(?:·\s*(.*))?$/.exec(t);
   return m?{s:m[1]||'',r:m[2].trim(),w:(m[3]||'').trim()}:{s:'',r:'',w:t};
+}
+
+// Ball colors -> grams ("Blue/Red" -> "450g/225g", "Green 1000g plyo ball" -> "1000g plyo ball")
+function pkGrams(t){ return String(t||'').replace(/\b(Green|Blue|Red|Yellow|Gray)\s+(\d+g)\b/g,'$2').replace(/\b(Green|Blue|Red|Yellow|Gray)\b(?!\s*\d)/g,m=>PLYO_W[m]+'g'); }
+function pkEq(x){ const t=pkGrams(x); return /^\d+g$/.test(t)?t+' plyo ball':t; }
+// A dose split into what the pitcher reads: sets, reps, weight, use (tool/band/fill), effort
+function pkDose(d){
+  const t=pkGrams(String(d||'').trim()); if(!t) return null;
+  const p=pkParse(t); if(!p.r&&!p.s) return {note:t};
+  const w=[],use=[],eff=[]; (p.w?p.w.split(/\s*·\s*/):[]).forEach(x=>{ if(!x) return; if(/%/.test(x)) eff.push(x); else if(/\d\s*(g|lbs?|kg|oz)\b/i.test(x)) w.push(x); else use.push(x); });
+  return {s:p.s||'1', r:p.r.replace(/\bea\b\.?/i,'each side'), w:w.join(' · '), use:use.join(' · '), eff:eff.join(' · ')};
+}
+function pkDoseHTML(d){
+  const x=pkDose(d); if(!x) return '';
+  if(x.note) return `<div class="dz"><span class="dzc dzn"><i>Do</i><b>${esc(x.note)}</b></span></div>`;
+  const c=(l,v,cls)=>v?`<span class="dzc ${cls||''}"><i>${l}</i><b>${esc(v)}</b></span>`:'';
+  return `<div class="dz">${c('Sets',x.s)}${c('Reps',x.r)}${c('Weight',x.w,'dzw')}${c('Use',x.use)}${c('Effort',x.eff)}</div>`;
 }
 function pkCompose(s,r,w){ s=String(s||'').trim(); r=String(r||'').trim(); w=String(w||'').trim();
   const sr=s&&r?`${s}×${r}`:r?`x${r}`:s?`${s} sets`:''; return [sr,w].filter(Boolean).join(' · '); }
@@ -4973,7 +5001,7 @@ const fromSheet=name=>isMine(name)||SHEET_EXTRAS.includes(name);
 function vidFor(routine,drill){ { const cv=typeof pkRowVid==='function'&&pkRowVid(routine,drill); if(cv) return cv; } const k=drill.toLowerCase().replace(/[^a-z0-9]/g,''); return (fromSheet(routine)&&SHEET_LINKS[/^Plyo/.test(routine)?'plyo':'pre'][k])||linkFor(drill); }
 // A routine to look up, with no check-off (it is not on the day's required list)
 function refRow(name){ const rows=libRows(name), nv=rows.filter(([a])=>vidFor(name,a)).length, eq=equipFor(name);
-  return `<details class="rt ref" data-name="${esc(name)}"><summary><span class="rt-n"><b>${esc(name)}</b><small>${rows.length} drills · ${nv} videos</small></span>${svg('chev','chev')}</summary><div class="rt-b">${eq.length?`<div class="need"><span>Need</span>${eq.map(x=>`<em>${equipIcon(x)}${esc(x)}</em>`).join('')}</div>`:''}${drillRows(name)}</div></details>`; }
+  return `<details class="rt ref" data-name="${esc(name)}"><summary><span class="rt-n"><b>${esc(name)}</b><small>${rows.length} drills · ${nv} videos</small></span>${svg('chev','chev')}</summary><div class="rt-b">${eq.length?`<div class="need"><span>Need</span>${eq.map(x=>`<em>${equipIcon(pkEq(x))}${esc(pkEq(x))}</em>`).join('')}</div>`:''}${drillRows(name)}</div></details>`; }
 function sheetExtrasHTML(){ if(S.program==='personal') return '';
   return `<details class="rt xtra"><summary><span class="rt-n"><b>More from your Pre-Throw sheet</b><small>Dynamic Warm Up 1-2 · Med Ball 1-3 · when your coaches call for them</small></span>${svg('chev','chev')}</summary><div class="rt-b">${SHEET_EXTRAS.map(refRow).join('')}</div></details>`; }
 
@@ -5038,11 +5066,11 @@ function openSheet(drill, reps, routine, url){
   document.getElementById('sheetBody').innerHTML=`
     <p class="eyebrow2">${esc(routine)}</p>
     <h3>${esc(drill)}</h3>
-    <p class="reps">${esc(/^Plyo/.test(routine)?plyoText(reps):reps)}</p>
+    ${pkDoseHTML(reps)}
     ${tidal?`<div class="tidal"><span class="tt-ico" aria-hidden="true"></span><div><b>Tidal Tank:</b> do every rep both <b>righty and lefty</b>.</div></div>`:''}
     ${e?`<div class="vwrap ${e.shorts?'tall':''}"><iframe src="${e.src}" title="${esc(drill)} demo video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:'<p class="hint">No video for this drill yet.</p>'}
     ${url?`<a class="btn ghost yt" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${svg('play')}Open on YouTube</a><p class="hint">If the video doesn't play here, use Open on YouTube.</p>`:''}
-    ${eq.length?`<div class="need" style="border:0;padding:8px 0 0"><span>${esc(routine)} needs</span>${eq.map(x=>`<em>${equipIcon(x)}${esc(x)}</em>`).join('')}</div>`:''}`;
+    ${eq.length?`<div class="need" style="border:0;padding:8px 0 0"><span>${esc(routine)} needs</span>${eq.map(x=>`<em>${equipIcon(pkEq(x))}${esc(pkEq(x))}</em>`).join('')}</div>`:''}`;
   const sh=document.getElementById('sheet'); sheetReturn=document.activeElement;
   sh.hidden=false; requestAnimationFrame(()=>sh.classList.add('on')); setTimeout(()=>{ if(!sh.hidden) sh.classList.add('on'); },80);
   document.getElementById('sheetClose').focus();
@@ -5255,7 +5283,7 @@ function renderMonth(){
 
 function drillRows(name){
   const rows=libRows(name);
-  return `<table>${rows.map(([a,r])=>{ const u=vidFor(name,a); return `<tr><td>${u?`<a class="vid" href="${esc(u)}" target="_blank" rel="noopener noreferrer" data-drill="${esc(a)}" data-reps="${esc(r)}" data-routine="${esc(name)}"><span class="play" aria-hidden="true"></span>${esc(a)}</a>`:esc(a)}</td><td class="n">${esc(/^Plyo/.test(name)?plyoText(r):r)}${/Tidal Tank/.test(r)?' <span class="rl" title="Both righty and lefty">R + L</span>':''}</td></tr>`; }).join('')}</table>`;
+  return `<div class="dlist">${rows.map(([a,r])=>{ const u=vidFor(name,a); return `<div class="drow"><div class="drow-n">${u?`<a class="vid" href="${esc(u)}" target="_blank" rel="noopener noreferrer" data-drill="${esc(a)}" data-reps="${esc(r)}" data-routine="${esc(name)}"><span class="play" aria-hidden="true"></span>${esc(a)}</a>`:`<b>${esc(a)}</b>`}${/Tidal Tank/.test(r)?' <span class="rl" title="Both righty and lefty">R + L</span>':''}</div>${pkDoseHTML(r)}</div>`; }).join('')}</div>`;
 }
 function routineRow(name,k,pp){
   const opt=!!(pp&&pp.opt&&pp.opt.includes(name)), rows=libRows(name), nv=rows.filter(([a])=>vidFor(name,a)).length, done=(S.done&&S.done[k]||[]).includes(name);
@@ -5263,7 +5291,7 @@ function routineRow(name,k,pp){
   return `<details class="rt ${done?'is-done':''}" data-name="${esc(name)}">
     <summary><button type="button" class="tick" data-tick="${esc(name)}" aria-pressed="${done}" aria-label="Mark ${esc(name)} ${done?'not done':'done'}">${svg('check')}</button>
       <span class="rt-n"><b>${esc(name)}${opt?' <em class="optb">Optional</em>':''}</b><small>${SECTION_OF(name)} · ${rows.length} drills · ${nv} videos${isMine(name)?' · built for you':''}</small></span>${svg('chev','chev')}</summary>
-    <div class="rt-b"><p class="rt-why">${routineWhy(name)}</p>${eq.length?`<div class="need"><span>Need</span>${eq.map(x=>`<em>${equipIcon(x)}${esc(x)}</em>`).join('')}</div>`:''}${tt?`<div class="tidal"><span class="tt-ico" aria-hidden="true"></span><div><b>Tidal Tank drills</b> (tube and sphere): do every rep both <b>righty and lefty</b>.</div></div>`:''}${drillRows(name)}</div>
+    <div class="rt-b"><p class="rt-why">${routineWhy(name)}</p>${eq.length?`<div class="need"><span>Need</span>${eq.map(x=>`<em>${equipIcon(pkEq(x))}${esc(pkEq(x))}</em>`).join('')}</div>`:''}${tt?`<div class="tidal"><span class="tt-ico" aria-hidden="true"></span><div><b>Tidal Tank drills</b> (tube and sphere): do every rep both <b>righty and lefty</b>.</div></div>`:''}${drillRows(name)}</div>
   </details>`;
 }
 function renderDetail(){
@@ -5300,7 +5328,7 @@ function renderDetail(){
       <button type="button" class="whatbtn" data-info="${p.kind}">What does ${/^[aeiou]/i.test(label(p))?'an':'a'} ${esc(lcLabel(label(p)))} day mean?</button>
       <div class="row hero-actions">${logBtn}${editBtn}${ovr}</div>
       ${upNext(k)}
-      ${kit.length?`<details class="kitd"><summary><span class="lbl">What you need today</span><span class="hint">${kit.length} items</span>${svg('chev','chev')}</summary><div class="need" style="border:0;padding:8px 0 0">${kit.map(x=>`<em>${equipIcon(x)}${esc(x)}</em>`).join('')}</div></details>`:''}
+      ${kit.length?`<details class="kitd"><summary><span class="lbl">What you need today</span><span class="hint">${kit.length} items</span>${svg('chev','chev')}</summary><div class="need" style="border:0;padding:8px 0 0">${kit.map(x=>`<em>${equipIcon(pkEq(x))}${esc(pkEq(x))}</em>`).join('')}</div></details>`:''}
       ${dayStepsHTML(p,k)}
     </div>`;
 }
