@@ -1310,8 +1310,15 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
 .vhacct2 .vhrow:first-child{border-top:0}
 .vhacct2 .vhrow{padding-left:0;padding-right:0}
 /* ===== Programs tab (coach) and coach day edits ===== */
-.pk-seg{grid-template-columns:repeat(4,minmax(0,1fr))}
-@media (max-width:560px){ .pk-seg{grid-template-columns:repeat(2,minmax(0,1fr));border-radius:18px} }
+.pk-seg{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:640px){ .pk-seg{grid-template-columns:repeat(3,minmax(0,1fr));border-radius:18px} }
+.pk-rtgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media (max-width:900px){ .pk-rtgrid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.pk-rtcol{display:flex;flex-direction:column;gap:6px}
+.pk-rtbtn{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;color:var(--ink)}
+.pk-rtbtn small{color:var(--muted);font-size:12.5px}
+.pk-rtbtn.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.pk-copy{margin-top:4px}
 .pk-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .pk-head{align-items:flex-start;flex-wrap:wrap}
 .pk-head>div{flex:1;min-width:220px}
@@ -1333,7 +1340,7 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
 .pk-card>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .pk-card small{color:var(--muted);font-size:13px}
 .pk-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:pk}
-.pk-items li{display:grid;grid-template-columns:minmax(0,1fr) 150px auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface)}
+.pk-items li{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,300px) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--surface)}
 @media (max-width:560px){ .pk-items li{grid-template-columns:minmax(0,1fr) auto} .pk-items .pk-dose{grid-column:1/-1;grid-row:2} }
 .pk-in{display:flex;flex-direction:column;min-width:0}
 .pk-in small{color:var(--muted);font-size:12.5px}
@@ -1689,17 +1696,18 @@ function pkSearch(q,g,f,vid){
   return DRILL_LIB.filter(d=>(!g||g==='all'||d.g===g)&&(!f||d.x.includes(f))&&(!vid||pkVid(d))&&
     words.every(w=>(d.n+' '+d.eq+' '+d.f+' '+d.t+' '+d.c+' '+d.x.join(' ')+' '+d.src).toLowerCase().includes(w)));
 }
-function pkItems(ctx){ return ctx==='ed'?(PG.ed&&PG.ed.dr.drills):ctx==='set'?(PG.set&&PG.set.items):null; }
+function pkItems(ctx){ return ctx==='ed'?(PG.ed&&PG.ed.dr.drills):ctx==='set'?(PG.set&&PG.set.items):ctx==='rt'?(PG.rt&&PG.rt.items):null; }
 function pkItemsHTML(items,ctx){
   if(!items.length) return '<p class="hint">No drills yet. Search below to add some.</p>';
-  return `<ol class="pk-items">${items.map((x,i)=>{ const d=DL_BY[x.id]; return `<li><div class="pk-in"><b>${esc(x.n||(d&&d.n)||x.id)}</b><small>${esc(d?d.g+(d.f?' · '+d.f:''):'')}${(x.v||(d&&pkVid(d)))?' · ▶ video':''}</small></div>
+  return `<ol class="pk-items">${items.map((x,i)=>{ const d=DL_BY[x.id]; return `<li><div class="pk-in"><b>${esc(x.n||(d&&d.n)||x.id)}</b><small>${esc([d?d.g:'',d&&d.f?d.f:'',(x.v||(d&&pkVid(d)))?'▶ video':'',(!d&&!x.v)?'no video':''].filter(Boolean).join(' · '))}</small></div>
     <input type="text" class="pk-dose" data-pkdose="${ctx}:${i}" value="${esc(x.d||'')}" placeholder="Sets × reps" aria-label="Dose for ${esc(x.n||(d&&d.n)||'')}">
     <span class="pk-ibtn"><button type="button" data-pkmv="${ctx}:${i}:-1" aria-label="Move up">↑</button><button type="button" data-pkmv="${ctx}:${i}:1" aria-label="Move down">↓</button><button type="button" data-pkrm="${ctx}:${i}" aria-label="Remove">✕</button></span></li>`; }).join('')}</ol>`;
 }
 function pkResHTML(ctx,q){
   if(!q||q.trim().length<2) return '';
   const r=pkSearch(q).slice(0,8);
-  return r.length?r.map(d=>`<button type="button" data-pkadd="${ctx}:${d.id}"><b>${esc(d.n)}</b><small>${esc(d.g)}${d.f?' · '+esc(d.f):''}${pkVid(d)?' · ▶ video':''}</small></button>`).join(''):'<p class="hint">No drills match.</p>';
+  const own=ctx!=='set'?`<button type="button" data-pkaddown="${ctx}"><b>+ Add “${esc(q.trim())}” as its own drill</b><small>not in the library</small></button>`:'';
+  return (r.length?'':'<p class="hint">No drills match.</p>')+r.map(d=>`<button type="button" data-pkadd="${ctx}:${d.id}"><b>${esc(d.n)}</b><small>${esc(d.g)}${d.f?' · '+esc(d.f):''}${pkVid(d)?' · ▶ video':''}</small></button>`).join('')+own;
 }
 function pkAddHTML(ctx,q){ return `<div class="pk-add"><input type="search" data-pkq="${ctx}" value="${esc(q||'')}" placeholder="Add a drill: type a name, tool or fault" autocomplete="off"><div class="pk-res" data-pkres="${ctx}">${pkResHTML(ctx,q)}</div></div>`; }
 const pkSel=(attr,cur,opts,none)=>`<select ${attr}>${none!==null?`<option value="">${none}</option>`:''}${opts.map(o=>{ const [v,l]=Array.isArray(o)?o:[o,o]; return `<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(l)}</option>`; }).join('')}</select>`;
@@ -1897,17 +1905,17 @@ function renderPrograms(){
   const el=document.getElementById('progBody'); if(!el) return;
   if(!isCoachUser()){ el.innerHTML=''; return; }
   seedExamples(); PG.inSheet=false;
-  const T=[['day','Edit a day'],['tpl','Templates'],['set','Drill sets'],['lib','Drill library']];
+  const T=[['day','Edit a day'],['rt','Routines'],['tpl','Templates'],['set','Drill sets'],['lib','Drill library']];
   el.innerHTML=`<div class="toolbar"><div><h2 class="h2">Programs</h2><p class="hint">Change any pitcher's day, build drill sets and templates, and assign them to many pitchers at once.</p></div></div>
     <div class="seg pk-seg" role="tablist">${T.map(([v,l])=>`<button type="button" data-pktab="${v}" aria-pressed="${PG.tab===v}">${l}</button>`).join('')}</div>
-    ${PG.tab==='lib'?pkLibHTML():PG.tab==='set'?pkSetsHTML():PG.tab==='tpl'?pkTplsHTML():pkDayTabHTML()}`;
+    ${PG.tab==='lib'?pkLibHTML():PG.tab==='rt'?pkRtHTML():PG.tab==='set'?pkSetsHTML():PG.tab==='tpl'?pkTplsHTML():pkDayTabHTML()}`;
 }
 function pkRefresh(){
   if(PG.inSheet){ const sb=document.getElementById('sheetBody'); if(sb) sb.innerHTML=pkEditorHTML(true); }
   else renderPrograms();
 }
 // Re-render a results box without losing focus in the search field
-function pkRes(ctx){ const box=document.querySelector(`[data-pkres="${ctx}"]`); if(!box) return; const q=ctx==='ed'?PG.ed.q:PG.set.q; box.innerHTML=pkResHTML(ctx,q); }
+function pkRes(ctx){ const box=document.querySelector(`[data-pkres="${ctx}"]`); if(!box) return; const q=ctx==='ed'?PG.ed.q:ctx==='rt'?PG.rt.q:PG.set.q; box.innerHTML=pkResHTML(ctx,q); }
 
 document.addEventListener('click',e=>{
   // "Edit this day" on a pitcher's page (coach viewing as him)
@@ -1921,9 +1929,11 @@ document.addEventListener('click',e=>{
   if((b=t.closest('[data-pkgo]'))){ pkOpenEditor(PG.ed.id,b.dataset.pkgo); renderPrograms(); return; }
   if((b=t.closest('[data-pkday]'))){ pkOpenEditor(PG.ed.id,ymd(addDays(parse(PG.ed.k),+b.dataset.pkday))); renderPrograms(); return; }
   if((b=t.closest('[data-pkadd]'))){ const [ctx,id]=b.dataset.pkadd.split(':'); const L=pkItems(ctx); if(!L) return; const d=DL_BY[id];
-    L.push(ctx==='ed'?pkSnap({id}):{id,d:(d&&d.d)||''});
-    if(ctx==='ed'){ PG.ed.q=''; if(!PG.ed.dr.setName) PG.ed.dr.setName='Your drills'; } else PG.set.q='';
+    L.push(ctx==='ed'?pkSnap({id}):ctx==='rt'?{id,n:d.n,d:d.d||'',v:pkVid(d)}:{id,d:(d&&d.d)||''});
+    if(ctx==='ed'){ PG.ed.q=''; if(!PG.ed.dr.setName) PG.ed.dr.setName='Your drills'; } else if(ctx==='rt') PG.rt.q=''; else PG.set.q='';
     pkRefresh(); const inp=document.querySelector(`[data-pkq="${ctx}"]`); if(inp) inp.focus(); return; }
+  if((b=t.closest('[data-pkaddown]'))){ const ctx=b.dataset.pkaddown, L=pkItems(ctx), q=(ctx==='ed'?PG.ed.q:PG.rt.q).trim(); if(!L||!q) return; L.push({n:q,d:'',v:''}); if(ctx==='ed'){ PG.ed.q=''; if(!PG.ed.dr.setName) PG.ed.dr.setName='Your drills'; } else PG.rt.q=''; pkRefresh(); return; }
+  if((b=t.closest('[data-pkrt]'))){ pkOpenRt(PG.rtWho,b.dataset.pkrt); renderPrograms(); const s=document.getElementById('pkRtEd'); if(s) s.scrollIntoView({behavior:'smooth',block:'start'}); return; }
   if((b=t.closest('[data-pkrm]'))){ const [ctx,i]=b.dataset.pkrm.split(':'); const L=pkItems(ctx); if(L){ L.splice(+i,1); pkRefresh(); } return; }
   if((b=t.closest('[data-pkmv]'))){ const [ctx,i,dir]=b.dataset.pkmv.split(':'); const L=pkItems(ctx), a=+i, c=a+(+dir); if(L&&c>=0&&c<L.length){ [L[a],L[c]]=[L[c],L[a]]; pkRefresh(); } return; }
   if((b=t.closest('[data-pkvidsave]'))){ const id=b.dataset.pkvidsave, inp=root.querySelector(`[data-pkvid="${id}"]`), u=(inp&&inp.value||'').trim();
@@ -1955,6 +1965,12 @@ document.addEventListener('click',e=>{
       const id=x.id||pkId(); L.tpls[id]={n:x.n.trim(),days:x.days.map(d=>({...d}))}; pkSaveLib(); PG.tpl=null; renderPrograms(); toast('Template saved.'); break; }
     case 'deltpl': { if(PG.tpl.id) delete L.tpls[PG.tpl.id]; pkSaveLib(); PG.tpl=null; renderPrograms(); toast('Template deleted.'); break; }
     case 'closeasg': PG.asg=null; renderPrograms(); break;
+    case 'closert': PG.rt=null; renderPrograms(); break;
+    case 'savert': { const rows=pkRtRows(); if(!rows.length){ toast('Add at least one drill, or reset to the baseline.'); return; } pkSaveRt([PG.rt.id],rows); pkOpenRt(PG.rt.id,PG.rt.name); renderPrograms(); toast(`Saved. This is now ${cvName(C.athletes[PG.rt.id].name)}'s ${PG.rt.name}.`); break; }
+    case 'resetrt': pkSaveRt([PG.rt.id],null); pkOpenRt(PG.rt.id,PG.rt.name); renderPrograms(); toast('Back to the team baseline.'); break;
+    case 'basert': PG.rt.items=pkBaseRows(PG.rt.name); pkRefresh(); toast('Baseline loaded. Save to keep it.'); break;
+    case 'copyall': PG.rt.copy=pkStaff().map(x=>x.id).filter(id=>id!==PG.rt.id); renderPrograms(); document.querySelector('.pk-copy')&&(document.querySelector('.pk-copy').open=true); break;
+    case 'copyrt': { const rows=pkRtRows(); if(!PG.rt.copy.length){ toast('Check at least one pitcher.'); return; } if(!rows.length) return; pkSaveRt(PG.rt.copy,rows); toast(`Saved as ${PG.rt.name} for ${PG.rt.copy.length} pitcher${PG.rt.copy.length===1?'':'s'}.`); PG.rt.copy=[]; renderPrograms(); break; }
     case 'asgall': PG.asg.ids=pkStaff().map(x=>x.id); renderPrograms(); break;
     case 'asgnone': PG.asg.ids=[]; renderPrograms(); break;
     case 'doassign': pkDoAssign(false); break;
@@ -1965,7 +1981,7 @@ document.addEventListener('input',e=>{
   const t=e.target, root=t.closest('#progBody,#sheetBody'); if(!root) return;
   if(root.id==='sheetBody'&&!PG.inSheet) return;
   if(t.id==='pkQ'){ PG.q=t.value; const box=document.getElementById('pkLibList'); if(box) box.innerHTML=pkLibListHTML(); return; }
-  if(t.dataset.pkq){ const ctx=t.dataset.pkq; if(ctx==='ed') PG.ed.q=t.value; else PG.set.q=t.value; pkRes(ctx); return; }
+  if(t.dataset.pkq){ const ctx=t.dataset.pkq; if(ctx==='ed') PG.ed.q=t.value; else if(ctx==='rt') PG.rt.q=t.value; else PG.set.q=t.value; pkRes(ctx); return; }
   if(t.dataset.pkdose){ const [ctx,i]=t.dataset.pkdose.split(':'), L=pkItems(ctx); if(L&&L[+i]) L[+i].d=t.value; return; }
   if(t.hasAttribute('data-pksetname')){ PG.set.n=t.value; return; }
   if(t.hasAttribute('data-pktplname')){ PG.tpl.n=t.value; return; }
@@ -1977,6 +1993,8 @@ document.addEventListener('change',e=>{
   if(root.id==='sheetBody'&&!PG.inSheet) return;
   if(t.id==='pkF'){ PG.f=t.value; renderPrograms(); return; }
   if(t.id==='pkVid'){ PG.vid=t.checked; renderPrograms(); return; }
+  if(t.id==='pkRtWho'){ PG.rtWho=t.value; PG.rt=null; renderPrograms(); return; }
+  if(t.dataset.pkcopy){ const id=t.dataset.pkcopy; PG.rt.copy=t.checked?[...new Set([...PG.rt.copy,id])]:PG.rt.copy.filter(x=>x!==id); return; }
   if(t.id==='pkWho'){ pkOpenEditor(t.value,PG.ed?PG.ed.k:TODAY); renderPrograms(); return; }
   if(t.id==='pkDate'){ if(t.value){ pkOpenEditor(PG.ed.id,t.value); renderPrograms(); } return; }
   if(t.dataset.pkf&&t.tagName==='SELECT'){ const f=t.dataset.pkf, dr=PG.ed.dr; dr[f]=t.value;
@@ -1990,6 +2008,46 @@ document.addEventListener('change',e=>{
   if(t.dataset.pkwho){ const id=t.dataset.pkwho, A=PG.asg; A.ids=t.checked?[...new Set([...A.ids,id])]:A.ids.filter(x=>x!==id); const btn=root.querySelector('[data-pk="doassign"]'); if(btn) btn.textContent=`Assign to ${A.ids.length} pitcher${A.ids.length===1?'':'s'}`; return; }
   if(t.dataset.pkasg){ const f=t.dataset.pkasg; PG.asg[f]=t.type==='checkbox'?t.checked:t.value; if(PG.asg.kind==='tpl'&&f==='from') renderPrograms(); return; }
 });
+
+// ---------- Routines: every pitcher has the same names (Pre-Throw, Plyo, Rotator Cuff, Scap, Mobility 1-3);
+// the drills inside each can be changed per pitcher. Baseline = the team routines (LIB). Stored at a.coach.routines[name] = [[drill, dose, video]]
+const PK_RT_GROUPS=[['Pre-Throw',['Pre-Throw 1','Pre-Throw 2','Pre-Throw 3']],['Plyo',['Plyo 1','Plyo 2','Plyo 3']],['Rotator Cuff',['Rotator Cuff 1','Rotator Cuff 2','Rotator Cuff 3']],['Scap',['Scap 1','Scap 2','Scap 3']],['Mobility',['Mobility 1','Mobility 2','Mobility 3']]];
+const pkRtOf=st=>(st&&st.coach&&st.coach.routines)||null;
+function pkMyRows(name){ const r=pkRtOf(S); return r&&r[name]?r[name]:null; }
+function pkRowVid(routine,drill){ const r=pkMyRows(routine); const row=r&&r.find(x=>x[0]===drill); return row&&row[2]||''; }
+// Baseline rows for a routine, as the team has them (no per-pitcher changes)
+function pkBaseRows(name){ return (LIB[name]||[]).map(([n,d])=>{ let v=''; try{ v=pkBaseVid(name,n); }catch(e){} return {n,d,v}; }); }
+function pkBaseVid(name,n){ const prev=S; try{ S={...prev,coach:null,pid:null}; return vidFor(name,n)||''; } finally { S=prev; } }
+function pkRowsFor(a,name){ const r=pkRtOf(a)&&pkRtOf(a)[name]; return r?r.map(([n,d,v])=>({n,d,v:v||''})):pkBaseRows(name); }
+function pkOpenRt(id,name){ const a=C.athletes[id]; if(!a) return; PG.rt={id,name,items:pkRowsFor(a,name),q:'',copy:[]}; }
+function pkRtHTML(){
+  const list=pkStaff(); if(!list.length) return '<section class="panel"><p class="hint">No pitchers yet.</p></section>';
+  if(!PG.rtWho||!C.athletes[PG.rtWho]) PG.rtWho=list[0].id;
+  const a=C.athletes[PG.rtWho], mine=pkRtOf(a)||{};
+  return `<section class="panel stack">
+    <div><h2 class="h2" style="font-size:22px">Routines</h2><p class="hint">Every pitcher has the same routines: Pre-Throw 1-3, Plyo 1-3, and Rotator Cuff, Scap and Mobility 1-3 after he throws. The drills inside each one are what you change for him. Anything you haven't changed uses the team baseline, so a new pitcher starts with the baseline.</p></div>
+    <div class="field" style="max-width:360px"><label>Pitcher</label>${pkSel('id="pkRtWho"',PG.rtWho,list.map(({id,a})=>[id,a.name]),null)}</div>
+    <div class="pk-rtgrid">${PK_RT_GROUPS.map(([g,names])=>`<div class="pk-rtcol"><p class="lbl">${g}</p>${names.map(n=>{ const c=!!mine[n], cnt=(mine[n]||LIB[n]||[]).length; return `<button type="button" class="pk-rtbtn ${PG.rt&&PG.rt.name===n&&PG.rt.id===PG.rtWho?'on':''}" data-pkrt="${esc(n)}"><b>${esc(n)}</b><small>${cnt} drills · ${c?'<em class="pk-tag">Custom for him</em>':'Baseline'}</small></button>`; }).join('')}</div>`).join('')}</div>
+  </section>${PG.rt&&PG.rt.id===PG.rtWho?pkRtEdHTML():''}`;
+}
+function pkRtEdHTML(){
+  const R=PG.rt, a=C.athletes[R.id], custom=!!(pkRtOf(a)&&pkRtOf(a)[R.name]), others=pkStaff().filter(x=>x.id!==R.id);
+  return `<section class="panel stack" id="pkRtEd"><div class="lrow pk-head"><div><h2 class="h2" style="font-size:22px">${esc(R.name)} · ${esc(cvName(a.name))}</h2><p class="hint">${custom?'Custom for him. Reset to go back to the team baseline.':'Team baseline. Change anything below and save to make it his own.'}</p></div><button type="button" class="btn ghost sm" data-pk="closert">Close</button></div>
+    ${pkItemsHTML(R.items,'rt')}
+    ${pkAddHTML('rt',R.q)}
+    <div class="row pk-row"><button type="button" class="btn" data-pk="savert">Save for ${esc(cvName(a.name))}</button>${custom?'<button type="button" class="btn ghost" data-pk="resetrt">Reset to baseline</button>':''}<button type="button" class="btn ghost" data-pk="basert">Load the baseline</button></div>
+    ${others.length?`<details class="rt pk-copy"><summary><span class="rt-n"><b>Give this version to other pitchers too</b><small>Saves these same drills as their ${esc(R.name)}</small></span>${svg('chev','chev')}</summary><div class="rt-b pk-db">
+      <div class="pk-who">${others.map(({id,a})=>`<label class="pk-chk"><input type="checkbox" data-pkcopy="${id}" ${R.copy.includes(id)?'checked':''}> ${esc(a.name)}${pkRtOf(a)&&pkRtOf(a)[R.name]?' <small class="hint">(custom)</small>':''}</label>`).join('')}</div>
+      <div class="row pk-row"><button type="button" class="btn ghost sm" data-pk="copyall">Select all</button><button type="button" class="btn sm" data-pk="copyrt">Save to checked pitchers</button></div></div></details>`:''}
+  </section>`;
+}
+function pkSaveRt(ids,rows){
+  const now=new Date().toISOString();
+  ids.forEach(id=>{ const a=C.athletes[id]; if(!a) return; a.coach=a.coach||{weeks:{},overrides:{}}; const R=a.coach.routines={...(a.coach.routines||{})};
+    if(rows) R[PG.rt.name]=rows; else delete R[PG.rt.name]; a.coach.routinesAt=now; planCaches.delete(a); coachChanged(id); });
+}
+const pkRtRows=()=>PG.rt.items.filter(x=>(x.n||'').trim()).map(x=>[x.n.trim(),x.d||'',x.v||'']);
+
 document.addEventListener('toggle',e=>{ const d=e.target; if(d.dataset&&d.dataset.pkopen){ if(d.open) PG.open=d.dataset.pkopen; else if(PG.open===d.dataset.pkopen) PG.open=null; } },true);
 
 </script>
@@ -4752,14 +4810,14 @@ const PLAYER_LIB={
  miano:{"Pre-Throw 1":[["CVB Lift & Sit","2x5 · CVB (light band)"],["Front Load & Ride","x5 ea · WB Tube"],["Separation Hug Holds","x5 ea · WB Tube"],["MB Double Loads","x3 ea · 6-8 lbs"],["SL Rotational OS Slam","x3 ea · 6-8 lbs"]],"Pre-Throw 2":[["CVB Lift & Sit","2x5 · CVB (light band)"],["Front Load & Ride","x5 ea · WB Tube"],["Separation Hug Holds","x5 ea · WB Tube"],["MB Double Loads","x3 ea · 6-8 lbs"]],"Pre-Throw 3":[["CVB Lift & Sit","x3 · CVB (light band)"],["Front Load & Ride","x3 ea · WB Tube"],["Separation Hug Holds","x3 ea · WB Tube"]],"Plyo 1":[["Reverse Throw","1x10 · 1000g · 50-70%"],["Straight Arm Retractions","1x5 ea · 250g/200g · 60-70%"],["90/90 Blend to Throw","1x5 ea · 250g/200g · 70-80%"],["Reverse Lunge to Throw","1x3 ea · 250g/200g · 70-80%"],["Coil and Blend to Throw","1x5 ea · 250g/200g · 70-80%"],["Step Backs","1x3 ea · 200g/150g/100g · 80-90%"]],"Plyo 2":[["Reverse Throw","1x10 · 1000g · 50-70%"],["Arm Action Freestyle","1x8 ea · 350g/250g · 50-60%"],["Straight Arm Retractions","1x5 ea · 250g/200g · 60-70%"],["90/90 Blend to Throw","1x5 ea · 250g/200g · 60-70%"],["Reverse Lunge to Throw","1x3 ea · 250g/200g · 60-70%"]],"Plyo 3":[["Reverse Throw","1x10 · 1000g · 50-70%"],["Arm Action Freestyle","1x8 ea · 350g/250g · 50-60%"],["Straight Arm Retractions","1x3 ea · 250g/200g · 50-60%"],["90/90 Blend to Throw","1x3 ea · 250g/200g · 50-60%"],["Reverse Lunge to Throw","1x3 ea · 250g/200g · 50-60%"]]}
 };
 const myLib=()=>{ try{ return (S&&S.pid&&S.program!=='personal'&&PLAYER_LIB[S.pid])||null; }catch(e){ return null; } };
-const libRows=name=>{ const m=myLib(); return (m&&m[name])||LIB[name]||[]; };
-const isMine=name=>{ const m=myLib(); return !!(m&&m[name]); };
+const libRows=name=>{ const c=typeof pkMyRows==='function'&&pkMyRows(name); if(c) return c.map(r=>[r[0],r[1]]); const m=myLib(); return (m&&m[name])||LIB[name]||[]; };
+const isMine=name=>{ if(typeof pkMyRows==='function'&&pkMyRows(name)) return true; const m=myLib(); return !!(m&&m[name]); };
 // What he needs, worked out from his own rows
 function equipFor(name){
   if(!isMine(name)) return EQUIP[name]||[];
   const out=[], add=x=>{ if(x&&!out.includes(x)) out.push(x); };
   libRows(name).forEach(([,d])=>{ const p=d.split(' · '), w=p[1]||'';
-    if(/^Plyo/.test(name)) w.split('/').forEach(g=>add(g.trim()+' plyo ball'));
+    if(/^Plyo/.test(name)) w.split('/').forEach(g=>{ if(g.trim()) add(g.trim()+' plyo ball'); });
     else if(/lbs?$/.test(w)) add('Med ball '+w);
     else add(w); });
   if(/^Plyo/.test(name)) add('Plyo wall'); else if(out.some(x=>/^Med ball/.test(x))) add('Wall');
@@ -4813,7 +4871,7 @@ const SHEET_EXTRAS=['Dynamic Warm Up 1','Dynamic Warm Up 2','Med Ball 1','Med Ba
 Object.assign(LIB,{"Med Ball 1":[["SL Rotational Slam","2x3 ea · 4-6 lbs"],["Side-Side Slam","2x3 ea · 4-6 lbs"],["Step Backs","x3 ea · 4-6 lbs"],["Walking Wind Up","x3 ea · 4-6 lbs"],["Run & Guns","x3 ea · 4-6 lbs"]],"Med Ball 2":[["SL Scoop","2x3 ea · 4-6 lbs"],["Split Stance Slam","2x3 ea · 4-6 lbs"],["Rockers","x3 ea · 4-6 lbs"],["Bauers","x3 ea · 4-6 lbs"]],"Med Ball 3":[["Overhead Slam","2x3 ea · 8-12 lbs"],["Scoop Toss","2x3 ea · 8-12 lbs"],["Woodchopper Slam","2x3 ea · 8-12 lbs"]],"Dynamic Warm Up 1":[["Half-Kneeling Hip Flexor Mobilization","1"],["Walking Figure 4's","1 · 20 yds"],["Walking Leg Kicks (Frankensteins)","1 · 20 yds"],["Diagonal Lunge with Rotation","3 ea leg · 20 yds"],["Inchworms","1 · 20 yds"],["Forward Skip with Arm Circles","1 · 20 yds"],["3-way Step-Overs","1 · 20 yds"],["A-Skips","1 · 20 yds"],["Hamstring Skips","1 · 20 yds"],["Power Skips","2 · 20 yds"]],"Dynamic Warm Up 2":[["Jog","1 · To CF Fence"],["High Knees","1 · 20 yds"],["Butt Kicks","1 · 20 yds"],["High Knee Carioca","2 · 20 yds"],["Shuffle w/ Arm Swing","2 · 20 yds"],["Quad Pull + Toe Touch","1 · 20 yds"],["Heel Scoops","1 · 20 yds"],["Lateral Lunge + Overhead Reach","2 · 20 yds"],["Inch Worms","1 · 20 yds"],["Shuffle out 2 back 1","1 · 20 yds"],["Skips for Height","1 · 20 yds"],["Skips for Distance","1 · 20 yds"],["Sprint","2 · 20 yds"]]});
 Object.assign(EQUIP,{'Med Ball 1':['Med ball 4-6 lbs','Wall'],'Med Ball 2':['Med ball 4-6 lbs','Wall'],'Med Ball 3':['Med ball 8-12 lbs','Wall']});
 const fromSheet=name=>isMine(name)||SHEET_EXTRAS.includes(name);
-function vidFor(routine,drill){ const k=drill.toLowerCase().replace(/[^a-z0-9]/g,''); return (fromSheet(routine)&&SHEET_LINKS[/^Plyo/.test(routine)?'plyo':'pre'][k])||linkFor(drill); }
+function vidFor(routine,drill){ { const cv=typeof pkRowVid==='function'&&pkRowVid(routine,drill); if(cv) return cv; } const k=drill.toLowerCase().replace(/[^a-z0-9]/g,''); return (fromSheet(routine)&&SHEET_LINKS[/^Plyo/.test(routine)?'plyo':'pre'][k])||linkFor(drill); }
 // A routine to look up, with no check-off (it is not on the day's required list)
 function refRow(name){ const rows=libRows(name), nv=rows.filter(([a])=>vidFor(name,a)).length, eq=equipFor(name);
   return `<details class="rt ref" data-name="${esc(name)}"><summary><span class="rt-n"><b>${esc(name)}</b><small>${rows.length} drills · ${nv} videos</small></span>${svg('chev','chev')}</summary><div class="rt-b">${eq.length?`<div class="need"><span>Need</span>${eq.map(x=>`<em>${equipIcon(x)}${esc(x)}</em>`).join('')}</div>`:''}${drillRows(name)}</div></details>`; }
