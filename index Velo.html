@@ -1409,6 +1409,16 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
 .pk-srw-big.pk-srw4{grid-template-columns:80px 130px minmax(0,1fr) 110px}
 @media (max-width:480px){ .pk-srw4,.pk-srw-big.pk-srw4{grid-template-columns:1fr 1.4fr} }
 .pk-chl{font:600 11px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);align-self:center;margin-right:2px}
+
+/* Pitchers: no week setup (coaches only) */
+body.pk-pitcher #tab-daily-work .rail, body.pk-pitcher #editWeek, body.pk-pitcher #ovOff, body.pk-pitcher #ovNT, body.pk-pitcher #ovClear, body.pk-pitcher #ovLight, body.pk-pitcher #ovMod,
+body.pk-pitcher #hGenOpen, body.pk-pitcher .genpanel, body.pk-pitcher #hResetWk, body.pk-pitcher #hResetAll, body.pk-pitcher #penBanner, body.pk-pitcher #penPick{display:none!important}
+body.pk-pitcher #tab-daily-work.grid2{grid-template-columns:minmax(0,1fr)!important}
+body.pk-pitcher [data-hday]{cursor:default}
+/* Training Calendar: no "Why" */
+#tab-daily-work .daywhy, #tab-daily-work #wWhy{display:none!important}
+#monthPanel{margin-top:4px}
+.pk-prof{margin-top:22px}
 </style>
 </head>
 <body>
@@ -1428,11 +1438,9 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
   <div class="coachbar" id="coachBar" hidden></div>
   <nav class="tabs" aria-label="Sections">
     <a href="#home" data-tab="home"><span class="tl">Home</span></a>
-    <a href="#daily-work" data-tab="daily-work"><span class="tl long">Daily Work</span><span class="ts">Daily</span></a>
-    <a href="#month" data-tab="month"><span class="tl">Month</span></a>
+    <a href="#daily-work" data-tab="daily-work"><span class="tl long">Training Calendar</span><span class="ts">Calendar</span></a>
     <a href="#personal-plan" data-tab="personal-plan"><span class="tl">Log</span></a>
     <a href="#chat" data-tab="chat"><span class="tl">Chat</span><i class="tbadge" id="chatBadge" hidden></i></a>
-    <a href="#profile" data-tab="profile"><span class="tl">Profile</span></a>
     <a href="#report" data-tab="report"><span class="tl">Report</span></a>
     <a href="#programs" data-tab="programs"><span class="tl">Programs</span></a>
     <a href="#coach-view" data-tab="coach-view"><span class="tl long">Coach's View</span><span class="ts">Coach</span></a>
@@ -1441,13 +1449,13 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
 </header>
 
 <!-- ============ HOME ============ -->
-<main id="tab-home" hidden><div class="content" id="homeBody"></div></main>
+<main id="tab-home" hidden><div class="content" id="homeBody"></div><div class="content pk-prof" id="profBody"></div></main>
 <main id="tab-schedule" hidden><div class="content" id="schedBody"></div></main>
 <main id="tab-lift" hidden><div class="content" id="liftBody"></div></main>
 <main id="tab-report" hidden><div class="content" id="reportBody"></div></main>
 <main id="tab-programs" hidden><div class="content" id="progBody"></div></main>
 <main id="tab-chat" hidden><div class="content" id="chatBody"></div></main>
-<main id="tab-profile" hidden><div class="content" id="profBody"></div></main>
+<main id="tab-profile" hidden></main>
 
 <!-- ============ DAILY WORK ============ -->
 <main id="tab-daily-work" class="grid2">
@@ -1494,13 +1502,7 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
       <div class="weekbar" id="week"></div>
       <div class="ckey" id="wKey"></div>
     </section>
-  </div>
-</main>
-
-<!-- ============ MONTH ============ -->
-<main id="tab-month" hidden>
-  <div class="content">
-    <section class="panel">
+  <section class="panel" id="monthPanel">
       <p class="eyebrow3">Monthly calendar</p>
       <div class="toolbar">
         <div class="nav"><button type="button" id="mPrev" aria-label="Previous month">‹</button><button type="button" id="mNext" aria-label="Next month">›</button><h2 id="mTitle">Month</h2><span class="badge" id="mSub"></span></div>
@@ -1514,6 +1516,9 @@ details.cvdd>.cvdd-b{padding:0 18px 18px}
     </section>
   </div>
 </main>
+
+<!-- ============ MONTH ============ -->
+<main id="tab-month" hidden></main>
 
 <!-- ============ PERSONAL PLAN (LOG) ============ -->
 <main id="tab-personal-plan" hidden>
@@ -1839,12 +1844,15 @@ function pkSetEdHTML(){
 }
 
 // ---------- program templates ----------
+const pkDayName=i=>(i>=7?`Week ${Math.floor(i/7)+1} · `:'')+DOWL[(i+1)%7];
+const pkMonday=k=>{ const d=parse(k); return ymd(addDays(d,-((d.getDay()+6)%7))); };
+const pkNextMonday=()=>{ const m=pkMonday(TODAY); return m===TODAY?m:ymd(addDays(parse(m),7)); };
 const pkNewDay=()=>({kind:'',pitches:'',preThrow:'keep',plyo:'keep',post:'keep',cond:'keep',set:'',note:''});
 function pkTplsHTML(){
   if(PG.tpl) return pkTplEdHTML();
   const t=Object.entries(pkLib().tpls);
   return `<section class="panel stack"><div class="lrow pk-head"><div><h2 class="h2" style="font-size:22px">Program templates</h2><p class="hint">A run of days: a week, two weeks, a month. Build it once and put it on as many pitchers as you want, starting any date. After that you can still change any one pitcher's day without touching the template or anyone else.</p></div><button type="button" class="btn" data-pk="newtpl">+ New template</button></div>
-    ${t.length?t.map(([id,x])=>`<div class="pk-card"><div><b>${esc(x.n)}</b><small>${x.days.length} day${x.days.length===1?'':'s'} · ${esc(x.days.slice(0,7).map(d=>d.kind?PK_KL[d.kind]:'Keep').join(' · '))}${x.days.length>7?'…':''}</small></div><div class="row pk-row"><button type="button" class="btn sm" data-pkassign="tpl:${id}">Assign</button><button type="button" class="btn ghost sm" data-pkedittpl="${id}">Edit</button><button type="button" class="btn ghost sm" data-pkduptpl="${id}">Copy</button></div></div>`).join(''):'<p class="hint">No templates yet.</p>'}
+    ${t.length?t.map(([id,x])=>`<div class="pk-card"><div><b>${esc(x.n)}</b><small>${x.days.length>=7&&x.days.length%7===0?`${x.days.length/7} week${x.days.length===7?'':'s'}`:`${x.days.length} day${x.days.length===1?'':'s'}`} · ${esc(x.days.slice(0,7).map((d,i)=>DOW[(i+1)%7]+' '+(d.kind?PK_KL[d.kind]:'keep')).join(' · '))}${x.days.length>7?'…':''}</small></div><div class="row pk-row"><button type="button" class="btn sm" data-pkassign="tpl:${id}">Assign</button><button type="button" class="btn ghost sm" data-pkedittpl="${id}">Edit</button><button type="button" class="btn ghost sm" data-pkduptpl="${id}">Copy</button></div></div>`).join(''):'<p class="hint">No templates yet.</p>'}
   </section>${PG.asg&&PG.asg.kind==='tpl'?pkAssignHTML():''}`;
 }
 function pkTplEdHTML(){
@@ -1852,8 +1860,8 @@ function pkTplEdHTML(){
   const rsel=(i,f)=>pkSel(`data-pktd="${i}:${f}"`,t.days[i][f],[['keep',f==='preThrow'||f==='plyo'?'Auto':'Keep his plan'],['','None'],...PK_OPTS[f]],null);
   return `<section class="panel stack"><div class="lrow pk-head"><h2 class="h2" style="font-size:22px">${t.id?'Edit':'New'} template</h2><button type="button" class="btn ghost sm" data-pk="closetpl">Back</button></div>
     <div class="field"><label>Name</label><input type="text" data-pktplname value="${esc(t.n)}" placeholder="e.g. Week 1 build-up"></div>
-    <p class="hint">"Keep his plan" leaves that part of his day alone. Auto pre-throw and plyo follow the day type: high = 1, moderate = 2, light = 3.</p>
-    <div class="pk-days">${t.days.map((dy,i)=>`<div class="pk-day"><div class="pk-dayh"><b>Day ${i+1}</b><span class="pk-ibtn"><button type="button" data-pktdcopy="${i}" title="Copy this day" aria-label="Copy day ${i+1}">⧉</button><button type="button" data-pktdrm="${i}" aria-label="Remove day ${i+1}">✕</button></span></div>
+    <p class="hint">Each week runs Monday to Sunday. "Keep his plan" leaves that part of his day alone. Auto pre-throw and plyo follow the day type: high = 1, moderate = 2, light = 3.</p>
+    <div class="pk-days">${t.days.map((dy,i)=>`<div class="pk-day"><div class="pk-dayh"><b>${pkDayName(i)}</b><span class="pk-ibtn"><button type="button" data-pktdcopy="${i}" title="Copy to the next day" aria-label="Copy ${pkDayName(i)} to the next day">⧉</button><button type="button" data-pktdrm="${i}" aria-label="Remove ${pkDayName(i)}">✕</button></span></div>
       <div class="pk-grid">
         <div class="field"><label>Day type</label>${pkSel(`data-pktd="${i}:kind"`,dy.kind,PK_KINDS,'Keep his plan')}</div>
         ${PK_EVENT[dy.kind]?`<div class="field"><label>Pitches</label><input type="number" min="0" max="150" data-pktd="${i}:pitches" value="${esc(dy.pitches||'')}"></div>`:''}
@@ -1861,7 +1869,7 @@ function pkTplEdHTML(){
         <div class="field"><label>Drill set</label>${pkSel(`data-pktd="${i}:set"`,dy.set,sets.map(([id,s])=>[id,s.n]),'None')}</div>
       </div>
       <input type="text" data-pktd="${i}:note" value="${esc(dy.note||'')}" placeholder="Note for this day (optional)"></div>`).join('')}</div>
-    <div class="row pk-row"><button type="button" class="btn ghost" data-pk="addday">+ Add a day</button><button type="button" class="btn ghost" data-pk="addweek">+ Add a week</button></div>
+    <div class="row pk-row"><button type="button" class="btn ghost" data-pk="addweek">+ Add a week</button><button type="button" class="btn ghost" data-pk="addday">+ Add ${pkDayName(t.days.length).replace(/^Week \d+ · /,'')}</button></div>
     <div class="row pk-row"><button type="button" class="btn" data-pk="savetpl">Save template</button>${t.id?'<button type="button" class="btn ghost" data-pk="deltpl">Delete</button>':''}</div>
   </section>`;
 }
@@ -1879,7 +1887,7 @@ function pkTplDay(dy){
 // ---------- assign a set or template to many pitchers ----------
 function pkStartAssign(kind,ref){
   const t=new Date(todayD); const to=ymd(addDays(t,13));
-  PG.asg={kind,ref,ids:[],from:TODAY,to,dow:[false,true,true,true,true,true,true],throwOnly:true};
+  PG.asg={kind,ref,ids:[],from:kind==='tpl'?pkNextMonday():TODAY,to,dow:[false,true,true,true,true,true,true],throwOnly:true};
 }
 function pkAssignHTML(){
   const A=PG.asg, L=pkLib(), obj=A.kind==='set'?L.sets[A.ref]:L.tpls[A.ref]; if(!obj) return '';
@@ -1887,8 +1895,8 @@ function pkAssignHTML(){
   return `<section class="panel stack pk-asg" id="pkAsg"><div class="lrow pk-head"><h2 class="h2" style="font-size:22px">Assign “${esc(obj.n)}”</h2><button type="button" class="btn ghost sm" data-pk="closeasg">Close</button></div>
     <div class="field"><label>Pitchers</label><div class="row pk-row"><button type="button" class="btn ghost sm" data-pk="asgall">Select all</button><button type="button" class="btn ghost sm" data-pk="asgnone">Clear</button></div>
       <div class="pk-who">${list.map(({id,a})=>`<label class="pk-chk"><input type="checkbox" data-pkwho="${id}" ${A.ids.includes(id)?'checked':''}> ${esc(a.name)}</label>`).join('')||'<p class="hint">No pitchers yet.</p>'}</div></div>
-    ${tpl?`<div class="pk-grid"><div class="field"><label>Start date (Day 1)</label><input type="date" data-pkasg="from" value="${A.from}"></div></div>
-      <p class="hint">Runs ${obj.days.length} day${obj.days.length===1?'':'s'}: ${cvFmt(A.from)} to ${cvFmt(ymd(addDays(parse(A.from),obj.days.length-1)))}. Template days replace any edits already on those dates. Days left on "Keep his plan" with nothing else set are skipped.</p>`
+    ${tpl?`<div class="pk-grid"><div class="field"><label>Starts the week of</label><input type="date" data-pkasg="from" value="${A.from}"></div></div>
+      <p class="hint">Runs ${cvFmt(A.from)} to ${cvFmt(ymd(addDays(parse(A.from),obj.days.length-1)))}. Template days replace any edits already on those dates. Days left on "Keep his plan" with nothing else set are skipped.</p>`
     :`<div class="pk-grid"><div class="field"><label>From</label><input type="date" data-pkasg="from" value="${A.from}"></div><div class="field"><label>To</label><input type="date" data-pkasg="to" value="${A.to}"></div></div>
       <div class="field"><label>On these days</label><div class="chips">${DOW.map((n,i)=>`<button type="button" class="pk-chip" data-pkdow="${i}" aria-pressed="${A.dow[i]}">${n}</button>`).join('')}</div>
       <label class="pk-chk"><input type="checkbox" data-pkasg="throwOnly" ${A.throwOnly?'checked':''}> Only days he throws (skips off and no-throw days)</label></div>`}
@@ -2032,7 +2040,7 @@ document.addEventListener('change',e=>{
     const s=L.sets[t.value]; if(s){ if(!s.items.some(x=>x.id===id)) s.items.push({id,d:(DL_BY[id]||{}).d||''}); pkSaveLib(); toast(`Added to ${s.n}.`); PG.open=id; renderPrograms(); } return; }
   if(t.dataset.pktd&&t.tagName==='SELECT'){ const [i,f]=t.dataset.pktd.split(':'); PG.tpl.days[+i][f]=t.value; if(f==='kind') renderPrograms(); return; }
   if(t.dataset.pkwho){ const id=t.dataset.pkwho, A=PG.asg; A.ids=t.checked?[...new Set([...A.ids,id])]:A.ids.filter(x=>x!==id); const btn=root.querySelector('[data-pk="doassign"]'); if(btn) btn.textContent=`Assign to ${A.ids.length} pitcher${A.ids.length===1?'':'s'}`; return; }
-  if(t.dataset.pkasg){ const f=t.dataset.pkasg; PG.asg[f]=t.type==='checkbox'?t.checked:t.value; if(PG.asg.kind==='tpl'&&f==='from') renderPrograms(); return; }
+  if(t.dataset.pkasg){ const f=t.dataset.pkasg; PG.asg[f]=t.type==='checkbox'?t.checked:t.value; if(PG.asg.kind==='tpl'&&f==='from'&&t.value) PG.asg.from=pkMonday(t.value); if(PG.asg.kind==='tpl'&&f==='from') renderPrograms(); return; }
 });
 
 // ---------- Routines: every pitcher has the same names (Pre-Throw, Plyo, Rotator Cuff, Scap, Mobility 1-3);
@@ -2659,7 +2667,7 @@ function startDatesPanel(){
     ${row('Marty’s Short Boxes','Week of Nov 16','2026-11-20','First one Fri 11/20 · 20 pitches · 10-15 ft in front of home plate at 80% RPE, still off the mound')}
     ${row('Bullpens','Week of Nov 30','2026-12-04','First one Fri 12/4 · 20 pitches, building to 30')}
     ${row('Lives','Week of Jan 4','2027-01-04','30 pitches to start. Pen/Live days (your choice) are Fri 12/18, Sat 12/26 and Fri 1/1')}
-    <p class="hint">You can still add a Marty’s Short Box or bullpen earlier under Set My Week. You will get a reminder that it is ahead of the plan.</p></section>`;
+    <p class="hint">Your coach can add a Marty’s Short Box or bullpen earlier if he wants.</p></section>`;
 }
 
 // ---------- player profile: tap "Add" under height or weight ----------
@@ -3885,8 +3893,8 @@ const NEWS = {
   until: '2026-11-23',   // last day the banner shows (one week)
   title: "Welcome to Velo House",
   items: [
-    'This is the Velo House pitching app. Add your phone number on <b>Profile</b>, then set your week on <b>Home</b> under <b>Set My Week</b>.',
-    '<b>Daily Work</b> lays out today in order: before you throw, throw, then after you throw. Log it on <b>Log</b>.',
+    'This is the Velo House pitching app. Add your phone number in your profile at the bottom of <b>Home</b>. Your coach sets your week.',
+    '<b>Training Calendar</b> lays out today in order: before you throw, throw, then after you throw. Log it on <b>Log</b>.',
     '<b>Chat</b> reaches your coaches.'
   ]
 };
@@ -3917,16 +3925,16 @@ const ROUTINE_INFO = {
   'Nerve glides': '<b>Gentle glides that keep the nerves in your arm moving freely.</b> Follow the video. Slow and smooth, and back off if you feel tingling or pain.'
 };
 const HELP = [
-  ['What do I do each day?', `<p>Open <b>Daily Work</b>. It lists today's work in order: <b>1. Before you throw</b> (mobility, pre-throw, plyo), <b>2. Throw</b>, <b>3. After you throw</b> (rotator cuff, scap, mobility), then conditioning if it's on your card. Tap the ✓ on each routine when it's done.</p>`],
-  ['How do I set my bullpen and off days?', `<p>On <b>Home</b>, under <b>Set My Week</b>, tap the day and pick Bullpen, Marty’s Short Box, Live or Off day. Add the pitch count right there. Check <b>every week</b> to keep the same bullpen day. The rest of your week rebuilds around it.</p>`],
+  ['What do I do each day?', `<p>Open <b>Training Calendar</b>. It lists today's work in order: <b>1. Before you throw</b> (mobility, pre-throw, plyo), <b>2. Throw</b>, <b>3. After you throw</b> (rotator cuff, scap, mobility), then conditioning if it's on your card. Tap the ✓ on each routine when it's done.</p>`],
+  ['How do I set my bullpen and off days?', `<p>Your coach sets your week, including bullpens, Marty’s Short Boxes, lives and off days. Message him in <b>Chat</b> if something needs to change.</p>`],
   ['What do the colors mean?', `<ul><li><b>Red:</b> high intensity (live, bullpen, Marty’s Short Box or a hard throwing day)</li><li><b>Yellow:</b> moderate</li><li><b>Green:</b> light</li><li><b>Blue:</b> no throw</li><li><b>Gray:</b> off</li></ul><p>Tap any color in the color key for more.</p>`],
   ['How do I log my day?', `<p>Tap <b>Log today</b> on Home, or open the <b>Log</b> tab. Fill in how hard you threw, how many throws or pitches, how your arm feels, any soreness or pain, and a note on how you felt. It takes about 30 seconds.</p>`],
-  ["I can't throw today. What do I do?", `<p>On <b>Daily Work</b>, tap <b>Make it an off day</b> or <b>Make it a no-throw day</b>. Tap <b>Back to plan</b> to undo it. Don't make up a missed day by doubling up the next day.</p>`],
+  ["I can't throw today. What do I do?", `<p>Message your coach in <b>Chat</b> and he will change your day. Don't make up a missed day by doubling up the next day.</p>`],
   ['Sore or pain: what\'s the difference?', `<p><b>Just sore</b> (tight, achy, normal after throwing) is tracked so you and your coach can see it. <b>Pain</b> means sharp, pinching or pain that won't go away. Stop throwing, tell your coach or athletic trainer, and log it as Pain so your coach sees it right away.</p>`],
   ['What is RPE %?', `<p>How hard a throw feels compared with your max effort. 100% is everything you have, 85–100% is game intent, 70–85% is firm but controlled, and 50–70% is easy catch play. Go by feel, not the radar gun.</p>`],
-  ['How do I see how to do a drill?', `<p>On <b>Daily Work</b>, tap a routine to open it, then tap any drill with a ▶ to watch the video.</p>`],
+  ['How do I see how to do a drill?', `<p>On <b>Training Calendar</b>, tap a routine to open it, then tap any drill with a ▶ to watch the video.</p>`],
   ['How do I update my profile?', `<p>Tap <b>Edit profile</b> on Home (or <b>Account</b> at the top). Add your phone number, height, weight, top velo and the pitches you throw.</p>`],
-  ['It says "Set by your coach". Can I change it?', `<p>Yes. Tap the day under Set My Week and pick what you need. Your newest change is the one that counts. Let your coach know why.</p>`],
+  ['It says "Set by your coach". Can I change it?', `<p>No. Your coach sets your week. Message him in <b>Chat</b> if something needs to change.</p>`],
   ['How do I put the app on my home screen?', `<p><b>iPhone:</b> open the site in Safari, tap Share, then <b>Add to Home Screen</b>.<br><b>Android:</b> open it in Chrome, tap the ⋮ menu, then <b>Add to Home screen</b> or <b>Install app</b>.</p>`]
 ];
 
@@ -3983,7 +3991,7 @@ function weekEditor(){
   const strip=wdays.map((x,i)=>{ const pp=dayPlan(x), dd=parse(x), cls=pp?RX[pp.intensity].cls:'of', pk=pickedKind(c,i,x);
     return `<button type="button" class="hday ${cls} ${x===TODAY?'today':''} ${pk?'picked':''}" data-hday="${x}" aria-label="${DOWL[dd.getDay()]} ${dd.getMonth()+1}/${dd.getDate()}: ${pp?label(pp):'nothing set'}. Tap to change."><small>${DOW[dd.getDay()][0]}<span>${dd.getDate()}</span></small><i>${pk?'★':''}</i><b>${pp?(pp.pl?'P/L':SH[pp.kind]||label(pp)):'—'}</b><em>${lg[x]?'✓':''}</em></button>`; }).join('');
   return `<section class="panel stack hweekp">
-    <div class="toolbar"><div class="nav"><button type="button" id="hWkPrev" aria-label="Previous week" ${hWeekOff<=-4?'disabled':''}>‹</button><button type="button" id="hWkNext" aria-label="Next week" ${hWeekOff>=8?'disabled':''}>›</button><div><h2 class="h2" style="font-size:22px">Set My Week</h2><span class="wkl">${hWeekOff===0?'This week':hWeekOff===1?'Next week':'Week of'} · ${weekLabel(ws)}</span></div></div>${hWeekOff?'<button type="button" class="btn ghost sm" id="hWkNow">This week</button>':''}</div>
+    <div class="toolbar"><div class="nav"><button type="button" id="hWkPrev" aria-label="Previous week" ${hWeekOff<=-4?'disabled':''}>‹</button><button type="button" id="hWkNext" aria-label="Next week" ${hWeekOff>=8?'disabled':''}>›</button><div><h2 class="h2" style="font-size:22px">${isCoachUser()?'Set My Week':'My Week'}</h2><span class="wkl">${hWeekOff===0?'This week':hWeekOff===1?'Next week':'Week of'} · ${weekLabel(ws)}</span></div></div>${hWeekOff?'<button type="button" class="btn ghost sm" id="hWkNow">This week</button>':''}</div>
     <p class="hint">${coachSet?'<b>Your coach set this week.</b> Ask him if you need a change.':personal?'Tap a day to mark your bullpens, Marty’s Short Boxes, lives and off days, so your coach can see your week.':(ymd(addDays(ws,6))<SB_START?`<b>The plan has no mound work this week.</b> Marty’s Short Boxes start ${fmtWk(SB_START)}, bullpens ${fmtWk(PEN_START)}. You can still tap a day to add one, or set an <b>off</b> day.`:`Tap a day to set your <b>bullpen</b>, <b>Marty’s Short Box</b>, ${wk>=LIVE_START?'<b>live</b>, ':''}or <b>off</b> day. The rest of the week builds around it.${ymd(addDays(ws,6))<PEN_START?` The plan's bullpens start ${fmtWk(PEN_START)}.`:''}`)}</p>
     <div class="hweek">${strip}</div>
     ${coachSet||personal?'':genPanel(ws,c)}
@@ -4543,6 +4551,11 @@ document.addEventListener('click',e=>{
 },true);
 document.addEventListener('focusin',e=>{ if(VIEWING()&&!isCoachUser()&&e.target.closest('#tab-personal-plan input,#tab-personal-plan textarea')){ e.target.blur(); toast(`View only. This is ${cvName(S.name)}'s page.`); } },true);
 
+
+// ===== Pitchers can't set their own week in this version: coaches do it from his page =====
+const PK_WEEK_CTL='[data-hday],#hGenOpen,#hResetWk,#hResetAll,[data-gen],#genGo,#editWeek,#ovOff,#ovNT,#ovClear,#ovLight,#ovMod,#railTog,#penPick,#clrWeek,#clrMonth,#clrAll';
+function pkPitcherMode(){ document.body.classList.toggle('pk-pitcher',!isCoachUser()); }
+document.addEventListener('click',e=>{ if(isCoachUser()) return; const t=e.target.closest(PK_WEEK_CTL); if(t){ e.preventDefault(); e.stopImmediatePropagation(); toast('Your coach sets your week. Message him in Chat if something needs to change.'); } },true);
 // ===== Chat: head coach <-> one pitcher =====
 // Coach messages live in the pitcher's coach edits (coach.msgs); the pitcher's replies live in his own settings (msgs).
 const coachS=()=>VIEW?VIEW.S:S;
@@ -5377,7 +5390,7 @@ document.getElementById('wToday').addEventListener('click',()=>{ goWeek(todayD);
 document.getElementById('mPrev').addEventListener('click',()=>{ const i=mIdx(curMonth()); if(i>0){ goMonth(MONTHS[i-1]); render(); } });
 document.getElementById('mNext').addEventListener('click',()=>{ const i=mIdx(curMonth()); if(i<MONTHS.length-1){ goMonth(MONTHS[i+1]); render(); } });
 document.getElementById('week').addEventListener('click',e=>{ const c=e.target.closest('[data-k]'); if(!c) return; selected=c.dataset.k; render(); });
-document.getElementById('monthGrid').addEventListener('click',e=>{ const c=e.target.closest('[data-k]'); if(!c) return; selected=c.dataset.k; viewWeek=weekStart(parse(selected)); if(location.hash==='#month') location.hash='daily-work'; else render(); });
+document.getElementById('monthGrid').addEventListener('click',e=>{ const c=e.target.closest('[data-k]'); if(!c) return; selected=c.dataset.k; viewWeek=weekStart(parse(selected)); render(); { const dt=document.getElementById('detail'); if(dt) dt.scrollIntoView({behavior:'smooth',block:'start'}); } });
 document.getElementById('detail').addEventListener('click',e=>{
   const tick=e.target.closest('[data-tick]');
   if(tick){ e.preventDefault(); e.stopPropagation(); const n=tick.dataset.tick; S.done=S.done||{}; const cur=new Set(S.done[selected]||[]); cur.has(n)?cur.delete(n):cur.add(n); S.done[selected]=[...cur]; if(!S.done[selected].length) delete S.done[selected]; save();
@@ -6009,7 +6022,7 @@ function renderAccount(){
   document.getElementById('acctBody').innerHTML=`
     <p class="eyebrow2">${setup?'Before you start':'Account'}</p>
     <h3 id="acctH">${setup?'Set up your plan':esc(S.name||'Your account')}</h3>
-    ${setup?'<p class="hint" style="margin:4px 0 0">Your profile is set. Check it over, fix anything that is off, then set your bullpen and off days under Set My Week on Home.</p>':''}
+    ${setup?'<p class="hint" style="margin:4px 0 0">Your profile is set. Check it over, fix anything that is off, then check your week on Home. Your coach sets your bullpen and off days.</p>':''}
     <div class="stack" style="gap:18px;margin-top:12px">
       <div class="field"><label for="aName">Full name</label><input id="aName" type="text" value="${esc(S.name||'')}" autocomplete="name" placeholder="First and last name"></div>
       ${coach?profileFields():`<div class="field"><span class="lbl">Class</span><div class="seg seg4" id="aGrade">${GRADES.map(g=>`<button type="button" data-v="${g[0]}" aria-pressed="${S.grade===g[0]}">${g[1]}</button>`).join('')}</div></div>
@@ -6030,7 +6043,7 @@ function renderAccount(){
   const pn=document.getElementById('aPen'); if(pn) pn.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.penDay=+b.dataset.v; delete S.penLater; clearCache(); save(); render(); const plb=document.getElementById('aPenLater'); if(plb) plb.remove(); const dnb=document.getElementById('aDone'); if(dnb) dnb.textContent='Build my schedule'; pn.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); document.getElementById('aSaved').textContent=`Bullpen day saved: ${DOWL[S.penDay]}`; const dn=document.getElementById('aDone'); if(dn) dn.disabled=needsSetup(); });
   if(g) g.addEventListener('click',()=>{ const dn=document.getElementById('aDone'); if(dn) dn.disabled=needsSetup(); });
   const pl=document.getElementById('aPenLater'); if(pl) pl.addEventListener('click',()=>{ S.penLater=!S.penLater; save(); renderAccount(); if(S.penLater) document.getElementById('aSaved').textContent=S.grade?'No problem. Pick it anytime from Account.':'Pick your class, then you\'re in.'; });
-  const dn=document.getElementById('aDone'); if(dn) dn.addEventListener('click',()=>{ if(needsSetup()) return; acctSetup=false; closeAccount(); goWeek(todayD); selected=TODAY; render(); hWeekOff=0; location.hash='home'; toast('Now set your bullpen and off days under Set My Week'); });
+  const dn=document.getElementById('aDone'); if(dn) dn.addEventListener('click',()=>{ if(needsSetup()) return; acctSetup=false; closeAccount(); goWeek(todayD); selected=TODAY; render(); hWeekOff=0; location.hash='home'; toast('Your coach sets your week. Check it on Home.'); });
   const sw=document.getElementById('aSwitch'); if(sw) sw.onclick=()=>{ delete S.pid; save(); window.PICK_SKIPPED=false; try{ localStorage.removeItem('vhPickSkip'); }catch(e){} render(); openAccount(true); };
   wireProfileFields();
   [['aTown','town','Hometown'],['aHs','hs','High school'],['aGrad','grad','Grad year']].forEach(([id,k,l])=>{ const el=document.getElementById(id); if(!el) return; el.addEventListener('input',()=>{ const v=el.value.trim(); if(k==='grad'){ S.grad=/^\d{4}$/.test(v)?+v:null; if(S.grad&&CLASS_BY_GRAD[S.grad]) S.grade=CLASS_BY_GRAD[S.grad]; } else S[k]=v; save(); document.getElementById('aSaved').textContent=l+' saved'; }); });
@@ -6055,9 +6068,10 @@ window.renderPenBanner=renderPenBanner;
 renderPenBanner();
 // ===== Tabs =====
 function showTab(){
-  const t=(location.hash||'#home').slice(1);
+  if(typeof pkPitcherMode==='function') pkPitcherMode();
+  let t=(location.hash||'#home').slice(1); if(t==='month') t='daily-work'; const toProf=t==='profile'; if(toProf) t='home';
   const coachU=isCoachUser(), viewing=!!window.VIEW_AS;
-  const PT=['home','daily-work','month','personal-plan','chat','profile'];
+  const PT=['home','daily-work','personal-plan','chat'];
   const allowed=coachU?(viewing?PT:['home','chat','report','programs','coach-view']):PT;
   document.querySelectorAll('.tabs a[data-tab]').forEach(a=>{ a.hidden=!allowed.includes(a.dataset.tab); });
   renderModeBar();
@@ -6066,9 +6080,8 @@ function showTab(){
   document.querySelectorAll('.tabs a').forEach(a=>a.setAttribute('aria-current',a.dataset.tab===tab?'page':'false'));
   render();
   if(tab==='coach-view') renderCoach();
-  if(tab==='home') renderHome();
+  if(tab==='home'){ renderHome(); const pb=document.getElementById('profBody'); if(pb){ if(!coachU||viewing){ renderProfile(); pb.hidden=false; } else { pb.innerHTML=''; pb.hidden=true; } } if(toProf&&pb) setTimeout(()=>pb.scrollIntoView({behavior:'smooth',block:'start'}),60); }
   if(tab==='schedule') renderSchedule();
-  if(tab==='profile') renderProfile();
   if(tab==='chat') renderChat();
   if(tab==='lift') renderLift();
   if(tab==='report') renderReport();
