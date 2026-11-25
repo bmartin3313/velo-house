@@ -15,20 +15,20 @@ window.WLN_SUPABASE_KEY = '';
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#03324D">
+<meta name="theme-color" content="#101418">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Velo House">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="application-name" content="Velo House">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=Luckiest+Guy&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Brand (Cleary University): navy #03324D, red #00A0D2, silver #98999B. (--maroon keeps its old name but is Cleary navy.)
-     Intensity is semantic: red high, yellow moderate, green light (matches the staff Google Sheets).
+  /* Brand (Cleary University): navy #101418, red #1C6FA3, silver #5B6470. (--maroon keeps its old name but is Cleary navy.)
+     Intensity (sandlot theme): black high, Columbia blue moderate, light gray light, slate no throw, white dashed off.
      Layout: hero band, tab bar, then each tab's own grid. */
-  --maroon:#03324D; --maroon-deep:#021F30; --red:#00A0D2; --silver:#98999B; --black:#000000;
-  --bg:#F4F4F5; --surface:#FFFFFF; --ink:#0E0E10; --muted:#5E5F63; --line:#E2E2E4; --accent:#00A0D2;
+  --maroon:#101418; --maroon-deep:#000000; --red:#1C6FA3; --silver:#5B6470; --black:#000000;
+  --bg:#F4F4F5; --surface:#FFFFFF; --ink:#0E0E10; --muted:#5E5F63; --line:#E2E2E4; --accent:#1C6FA3;
   --hi:#D0352B; --hi-ink:#FFFFFF; --hi-bg:#FCE7E5; --hi-t:#B92D24;
   --mo:#E8B10C; --mo-ink:#1A1400; --mo-bg:#FDF4D6; --mo-t:#9A7000;
   --lt:#2E8B57; --lt-ink:#FFFFFF; --lt-bg:#E2F3E9; --lt-t:#25744A;
@@ -38,14 +38,14 @@ window.WLN_SUPABASE_KEY = '';
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#0A0A0B; --surface:#151517; --ink:#F2F2F3; --muted:#A3A4A8; --line:#2A2A2E; --accent:#6CCBFF;
+  --bg:#0A0A0B; --surface:#151517; --ink:#F2F2F3; --muted:#A3A4A8; --line:#2A2A2E; --accent:#9BD3F4;
   --hi:#E24A40; --hi-ink:#FFFFFF; --hi-bg:#36191A; --hi-t:#FF8A80;
   --mo:#F0BC2E; --mo-ink:#1A1400; --mo-bg:#33290C; --mo-t:#F5CC5A;
   --lt:#3FA56C; --lt-ink:#FFFFFF; --lt-bg:#132D1F; --lt-t:#6FD69A;
   --nt:#6A8CC0; --nt-ink:#FFFFFF; --nt-bg:#1A2436; --nt-t:#9DB8E6;
   --of:#3A3A3F; --of-ink:#D0D0D3; --of-bg:#18181B; --of-t:#A3A4A8; color-scheme:dark; } }
 :root[data-theme="dark"]{
-  --bg:#0A0A0B; --surface:#151517; --ink:#F2F2F3; --muted:#A3A4A8; --line:#2A2A2E; --accent:#6CCBFF;
+  --bg:#0A0A0B; --surface:#151517; --ink:#F2F2F3; --muted:#A3A4A8; --line:#2A2A2E; --accent:#9BD3F4;
   --hi:#E24A40; --hi-ink:#FFFFFF; --hi-bg:#36191A; --hi-t:#FF8A80;
   --mo:#F0BC2E; --mo-ink:#1A1400; --mo-bg:#33290C; --mo-t:#F5CC5A;
   --lt:#3FA56C; --lt-ink:#FFFFFF; --lt-bg:#132D1F; --lt-t:#6FD69A;
@@ -60,24 +60,24 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* Hero */
 header{position:relative;overflow:hidden;color:#fff;background:
-  radial-gradient(120% 140% at 90% 0%, rgba(50,186,255,.55) 0%, rgba(50,186,255,.18) 32%, rgba(0,0,0,0) 60%),
-  linear-gradient(180deg,#03324D 0%,#021F30 100%);padding:24px 20px 0}
+  radial-gradient(120% 140% at 90% 0%, rgba(155,211,244,.55) 0%, rgba(155,211,244,.18) 32%, rgba(0,0,0,0) 60%),
+  linear-gradient(180deg,#101418 0%,#000000 100%);padding:24px 20px 0}
 header .wrap{position:relative;max-width:1280px;margin:0 auto;display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:18px}
 .logo{width:92px;flex:none;filter:drop-shadow(0 8px 24px rgba(0,0,0,.6))}
 .logo img{width:100%;height:auto;display:block}
-.eyebrow{display:flex;align-items:center;gap:8px;font:600 13px var(--display);letter-spacing:.22em;text-transform:uppercase;color:#98999B;margin:0 0 4px}
+.eyebrow{display:flex;align-items:center;gap:8px;font:600 13px var(--display);letter-spacing:.22em;text-transform:uppercase;color:#5B6470;margin:0 0 4px}
 .eyebrow img{width:16px;height:auto}
 h1{font:700 40px/0.95 var(--display);letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
-h1 span{display:block;color:#98999B;font-weight:600;font-size:22px;letter-spacing:.08em;margin-top:6px}
+h1 span{display:block;color:#5B6470;font-weight:600;font-size:22px;letter-spacing:.08em;margin-top:6px}
 header p.sub{margin:0;color:#C9CACC;font-size:15px;max-width:40ch}
 @media (max-width:640px){ h1{font-size:32px} .logo{width:70px} }
 /* Tabs */
 .tabs{max-width:1280px;margin:20px auto 0;display:flex;gap:4px;overflow-x:auto}
 .tabs a{flex:none;display:block;padding:11px 20px 12px;font:700 17px var(--display);letter-spacing:.08em;text-transform:uppercase;color:#C9CACC;text-decoration:none;border-radius:12px 12px 0 0;border-bottom:4px solid transparent}
 .tabs a:hover{color:#fff}
-.tabs a[aria-current="page"]{color:#fff;background:rgba(255,255,255,.07);border-bottom-color:#98999B}
-.tabbar-line{height:4px;background:linear-gradient(90deg,#03324D 0 60%,#98999B 60% 100%)}
+.tabs a[aria-current="page"]{color:#fff;background:rgba(255,255,255,.07);border-bottom-color:#5B6470}
+.tabbar-line{height:4px;background:linear-gradient(90deg,#101418 0 60%,#5B6470 60% 100%)}
 
 main{max-width:1280px;margin:0 auto;padding:24px 16px 48px}
 .grid2{display:grid;grid-template-columns:310px 1fr;gap:22px;align-items:start}
@@ -118,7 +118,7 @@ select.big{font:600 18px var(--display);letter-spacing:.03em;text-transform:uppe
 .days7 input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
 .days7 label.auto span{border:1.5px dashed var(--maroon);color:var(--accent)}
 .check{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer}
-.check input{margin-top:3px;accent-color:#03324D}
+.check input{margin-top:3px;accent-color:#101418}
 .hint{font-size:13px;color:var(--muted);margin:0}
 .content{display:flex;flex-direction:column;gap:22px;min-width:0}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
@@ -265,7 +265,7 @@ td.n{color:var(--muted);white-space:normal;width:46%;font-variant-numeric:tabula
 .tablewrap tr.sel td{background:rgba(0,43,92,.08)}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .ex{font:600 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 6px;margin-left:6px}
-.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;border:1px solid #03324D;z-index:10}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;border:1px solid #101418;z-index:10}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} .card:hover{transform:none} }
 
@@ -373,7 +373,7 @@ td.n{color:var(--muted);white-space:normal;width:46%;font-variant-numeric:tabula
 input[type=email],input[type=password],#gPhone{background:var(--bg);color:inherit;border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;font-size:16px}
 .acct{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .hey{margin:0;font:700 34px/1 var(--display);text-transform:uppercase;letter-spacing:.02em;color:#fff}
-.hey span{color:#32BAFF}
+.hey span{color:#9BD3F4}
 .acct-row{display:flex;gap:10px;align-items:center;font-size:13px;color:#C9CACC}
 .acct-role{font:600 11.5px var(--display);letter-spacing:.14em;text-transform:uppercase;border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:2px 9px}
 .sync.saving{color:#E8B10C} .sync.error{color:#FF8A80}
@@ -382,8 +382,8 @@ input[type=email],input[type=password],#gPhone{background:var(--bg);color:inheri
 @media (max-width:640px){ .acct{align-items:flex-start;text-align:left;width:100%} .hey{font-size:28px} header .wrap{gap:12px} }
 body.gated,body.drawer-open{overflow:hidden}
 .gate{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;overflow:auto;background:
-  radial-gradient(120% 90% at 80% 0%, #021F30 0%, rgba(50,186,255,.5) 35%, rgba(0,0,0,0) 70%), #050405}
-.gate-card{width:min(420px,100%);background:var(--surface);color:var(--ink);border-radius:20px;padding:24px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px;text-align:center;border-top:5px solid #03324D}
+  radial-gradient(120% 90% at 80% 0%, #000000 0%, rgba(155,211,244,.5) 35%, rgba(0,0,0,0) 70%), #050405}
+.gate-card{width:min(420px,100%);background:var(--surface);color:var(--ink);border-radius:20px;padding:24px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:12px;text-align:center;border-top:5px solid #101418}
 .gate-logo{width:96px;margin:-6px auto 0}
 .gate-card .eyebrow{color:var(--muted)}
 .gate-h{margin:-6px 0 0;font:700 40px/1 var(--display);text-transform:uppercase}
@@ -517,13 +517,13 @@ body.gated,body.drawer-open{overflow:hidden}
 .pcard .foot{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;margin-top:auto}
 .pcard .foot b{color:var(--ink)}
 .cmpbox{display:flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
-.cmpbox input{accent-color:#03324D}
+.cmpbox input{accent-color:#101418}
 .cmp-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;font-weight:600}
 .cmp-leg i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .rulegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px 22px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:14px}
 .rule{display:flex;flex-direction:column;gap:4px}
 .rule .lrow b{font-variant-numeric:tabular-nums;color:var(--accent)}
-.rule input[type=range]{width:100%;accent-color:#03324D}
+.rule input[type=range]{width:100%;accent-color:#101418}
 /* Week */
 .wbwrap{border:0}
 .wb{border-collapse:separate;border-spacing:4px;min-width:820px;font-size:13px}
@@ -560,7 +560,7 @@ body.gated,body.drawer-open{overflow:hidden}
 .cdrawer .bd{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;transition:opacity .2s}
 .cdrawer .pane{position:absolute;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--bg);overflow:auto;transform:translateX(100%);transition:transform .22s ease;box-shadow:-20px 0 50px -20px rgba(0,0,0,.5)}
 .cdrawer.on .bd{opacity:1} .cdrawer.on .pane{transform:none}
-.cdrawer .dh{position:sticky;top:0;z-index:2;color:#fff;background:linear-gradient(120deg,#000 0%,#2a0714 70%,#021F30 100%);padding:18px 60px 14px 18px}
+.cdrawer .dh{position:sticky;top:0;z-index:2;color:#fff;background:linear-gradient(120deg,#000 0%,#2a0714 70%,#000000 100%);padding:18px 60px 14px 18px}
 .cdrawer .dh h3{margin:0;font:700 30px/1 var(--display);text-transform:uppercase}
 .cdrawer .dh p{margin:4px 0 0;color:#C9CACC;font-size:13.5px}
 .cdrawer .x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer}
@@ -672,7 +672,7 @@ body.gated,body.drawer-open{overflow:hidden}
 @media (max-width:640px){ .tabs a .tl.long{display:none} .tabs .ts{display:inline} .tabs a{padding:10px 4px 11px;font-size:13px} }
 .hsec{display:flex;flex-direction:column;gap:2px;padding:0 2px}
 .hsec .h2{font-size:22px}
-.hdiv{height:2px;background:linear-gradient(90deg,#03324D 0 60%,#98999B 60% 100%);border-radius:2px;margin:6px 0}
+.hdiv{height:2px;background:linear-gradient(90deg,#101418 0 60%,#5B6470 60% 100%);border-radius:2px;margin:6px 0}
 .ava{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--maroon);color:#fff;font:700 20px var(--display);letter-spacing:.04em}
 .ava.sm{width:38px;height:38px;font-size:15px}
 .hprof-top{display:flex;gap:14px;align-items:center}
@@ -874,7 +874,7 @@ body.gated,body.drawer-open{overflow:hidden}
 .gendays button:disabled{opacity:.6;cursor:not-allowed}
 
 /* ===== Log tab ===== */
-.loghero{background:radial-gradient(120% 140% at 90% 0%,#021F30 0%,#3a0a1a 45%,#140a0e 100%);color:#fff;border:0}
+.loghero{background:radial-gradient(120% 140% at 90% 0%,#000000 0%,#3a0a1a 45%,#140a0e 100%);color:#fff;border:0}
 .loghero .h2{color:#fff;font-size:30px}
 .loghero .hint{color:#E2C9D0}
 .lh-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
@@ -932,7 +932,7 @@ body.gated,body.drawer-open{overflow:hidden}
 .coachbar select option{color:#000}
 .cbnote{font-size:13px;color:#E2C9D0}
 .cbnote b{color:#fff}
-body.viewing .tabbar-line{background:linear-gradient(90deg,#E8B10C 0 60%,#98999B 60% 100%)}
+body.viewing .tabbar-line{background:linear-gradient(90deg,#E8B10C 0 60%,#5B6470 60% 100%)}
 .pc-open{align-self:flex-start;margin-top:2px}
 @media (max-width:640px){ .coachbar select{flex:1;min-width:0} }
 .cbnote{flex-basis:100%}
@@ -1077,23 +1077,23 @@ button.plc{cursor:pointer}
 /* ===== Cleary look v2: navy top, turquoise accent, navy-into-red band at the bottom ===== */
 :root{ --teal:#16C5CC; --bg:#EEF2F7; --surface:#FFFFFF; --ink:#0B1626; --muted:#566378; --line:#D9E0EA; --accent:#087F88;
   --nt-bg:#E3EBF6; --of-bg:#EEF1F5; }
-@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#060D19; --surface:#0D1727; --ink:#EEF3FA; --muted:#93A2B8; --line:#1E2B42; --accent:#6CCBFF; --of:#33405A; --of-bg:#111C2E; --of-t:#93A2B8; --nt-bg:#14223A; } }
-:root[data-theme="dark"]{ --bg:#060D19; --surface:#0D1727; --ink:#EEF3FA; --muted:#93A2B8; --line:#1E2B42; --accent:#6CCBFF; --of:#33405A; --of-bg:#111C2E; --of-t:#93A2B8; --nt-bg:#14223A; }
-header{background:radial-gradient(90% 120% at 100% 0%, rgba(50,186,255,.20) 0%, rgba(50,186,255,0) 55%),linear-gradient(180deg,#03324D 0%,#021F30 100%)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#060D19; --surface:#0D1727; --ink:#EEF3FA; --muted:#93A2B8; --line:#1E2B42; --accent:#9BD3F4; --of:#33405A; --of-bg:#111C2E; --of-t:#93A2B8; --nt-bg:#14223A; } }
+:root[data-theme="dark"]{ --bg:#060D19; --surface:#0D1727; --ink:#EEF3FA; --muted:#93A2B8; --line:#1E2B42; --accent:#9BD3F4; --of:#33405A; --of-bg:#111C2E; --of-t:#93A2B8; --nt-bg:#14223A; }
+header{background:radial-gradient(90% 120% at 100% 0%, rgba(155,211,244,.20) 0%, rgba(155,211,244,0) 55%),linear-gradient(180deg,#101418 0%,#000000 100%)}
 .eyebrow{color:#9FB4CF}
 .tabs a{color:#B9C7DB;border-radius:10px 10px 0 0}
-.tabs a[aria-current="page"]{background:rgba(50,186,255,.12);border-bottom-color:var(--teal)}
-.tabbar-line{height:3px;background:linear-gradient(90deg,var(--teal) 0%,rgba(50,186,255,.15) 70%,rgba(50,186,255,0) 100%)}
+.tabs a[aria-current="page"]{background:rgba(155,211,244,.12);border-bottom-color:var(--teal)}
+.tabbar-line{height:3px;background:linear-gradient(90deg,var(--teal) 0%,rgba(155,211,244,.15) 70%,rgba(155,211,244,0) 100%)}
 .panel{border-radius:18px;box-shadow:0 1px 2px rgba(6,13,25,.05),0 12px 28px -20px rgba(6,13,25,.35)}
-.btn{background:linear-gradient(135deg,#0A5A82 0%,#03324D 100%);box-shadow:inset 0 0 0 1px rgba(47,211,217,.28);transition:transform .08s ease,box-shadow .15s ease}
-.btn:hover{box-shadow:inset 0 0 0 1px rgba(47,211,217,.6)}
+.btn{background:linear-gradient(135deg,#101418 0%,#101418 100%);box-shadow:inset 0 0 0 1px rgba(155,211,244,.28);transition:transform .08s ease,box-shadow .15s ease}
+.btn:hover{box-shadow:inset 0 0 0 1px rgba(155,211,244,.6)}
 .btn:active{transform:scale(.98)}
 .btn.ghost{background:transparent;box-shadow:none}
-.seg button[aria-pressed="true"],.seg3 button[aria-pressed="true"]{background:linear-gradient(135deg,#0A5A82,#03324D);box-shadow:inset 0 0 0 1px rgba(47,211,217,.45)}
-.ava{background:linear-gradient(135deg,#0A5A82,#03324D);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--teal)}
+.seg button[aria-pressed="true"],.seg3 button[aria-pressed="true"]{background:linear-gradient(135deg,#101418,#101418);box-shadow:inset 0 0 0 1px rgba(155,211,244,.45)}
+.ava{background:linear-gradient(135deg,#101418,#101418);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--teal)}
 .lbl{color:var(--muted)}
-.cdrawer .dh{background:radial-gradient(90% 140% at 100% 0%, rgba(50,186,255,.22) 0%, rgba(50,186,255,0) 60%),linear-gradient(180deg,#03324D,#021F30)}
-.gate{background:radial-gradient(80% 60% at 85% 0%, rgba(50,186,255,.22) 0%, rgba(50,186,255,0) 60%),linear-gradient(160deg,#03324D 0%,#021F30 55%,#036A93 130%)}
+.cdrawer .dh{background:radial-gradient(90% 140% at 100% 0%, rgba(155,211,244,.22) 0%, rgba(155,211,244,0) 60%),linear-gradient(180deg,#101418,#000000)}
+.gate{background:radial-gradient(80% 60% at 85% 0%, rgba(155,211,244,.22) 0%, rgba(155,211,244,0) 60%),linear-gradient(160deg,#101418 0%,#000000 55%,#036A93 130%)}
 .gate-card{border-top:4px solid var(--teal)}
 .genpanel{border-color:color-mix(in srgb,var(--teal) 45%,var(--line));background:color-mix(in srgb,var(--teal) 7%,var(--surface))}
 .gendays button[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#04202A}
@@ -1103,21 +1103,21 @@ header{background:radial-gradient(90% 120% at 100% 0%, rgba(50,186,255,.20) 0%, 
 .welcome b{display:block;font:700 34px/1 var(--display);text-transform:uppercase;letter-spacing:.01em}
 .welcome{margin-top:2px}
 .welcome em{font-style:normal;color:var(--muted);font-size:13.5px;white-space:nowrap;padding-bottom:3px}
-.glance i{background:linear-gradient(135deg,#0A5A82,#03324D);box-shadow:inset 0 0 0 1px rgba(47,211,217,.5)}
+.glance i{background:linear-gradient(135deg,#101418,#101418);box-shadow:inset 0 0 0 1px rgba(155,211,244,.5)}
 .sdrow em{background:color-mix(in srgb,var(--teal) 16%,transparent);color:var(--accent)}
-.cfoot{margin-top:36px;color:#fff;background:linear-gradient(105deg,#03324D 0%,#02283E 38%,#036A93 72%,#00A0D2 100%);border-top:3px solid var(--teal)}
+.cfoot{margin-top:36px;color:#fff;background:linear-gradient(105deg,#101418 0%,#02283E 38%,#036A93 72%,#1C6FA3 100%);border-top:3px solid var(--teal)}
 .cfoot-in{max-width:1280px;margin:0 auto;padding:26px 20px calc(30px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:14px}
 .cfoot img{width:74px;height:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
 .cfoot b{display:block;font:700 20px/1.1 var(--display);letter-spacing:.14em;text-transform:uppercase}
 .cfoot span{display:block;font:600 12.5px var(--display);letter-spacing:.2em;text-transform:uppercase;color:#C9D6E8;margin-top:3px}
-header{background:linear-gradient(105deg,#03324D 0%,#02283E 52%,#036A93 80%,#00A0D2 100%)}
+header{background:linear-gradient(105deg,#101418 0%,#02283E 52%,#036A93 80%,#1C6FA3 100%)}
 .progwrap{display:none!important}
 .tabs a{white-space:nowrap}
 @media (max-width:640px){ .tabs{gap:0;scrollbar-width:none} .tabs a{padding:10px 7px 11px;font-size:13px;letter-spacing:.02em} }
 .tlogo{flex:none;display:inline-grid;place-items:center;width:44px;height:44px;background:none no-repeat;background-size:264px 132px;filter:drop-shadow(0 0 1px rgba(255,255,255,.55)) drop-shadow(0 1px 2px rgba(0,0,0,.35))}
 .tlogo.big{width:64px;height:64px;background-size:384px 192px}
 .tlogo.none{border-radius:10px;filter:none}
-.tlogo.none{background:linear-gradient(135deg,#0A5A82,#03324D);color:#fff;font:700 14px var(--display);letter-spacing:.04em}
+.tlogo.none{background:linear-gradient(135deg,#101418,#101418);color:#fff;font:700 14px var(--display);letter-spacing:.04em}
 .tlogo.none.big{font-size:20px}
 .ng{display:flex;align-items:center;gap:12px}
 .ngt{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -1154,12 +1154,12 @@ body.trk-rtt #editWeek,body.trk-rtt #ovOff,body.trk-rtt #ovNT,body.trk-rtt #ovLi
 .nlmain .ava{box-shadow:none}
 .nln{min-width:0;display:flex;flex-direction:column} .nln b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .nln small{color:var(--muted);font-size:12.5px}
 .nlrow .nmsg{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:16px}
-.tabs a{position:relative} .tbadge{position:absolute;top:3px;right:2px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--accent,#32BAFF);color:#06222b;font:700 11px/17px var(--body);text-align:center;letter-spacing:0}
+.tabs a{position:relative} .tbadge{position:absolute;top:3px;right:2px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--accent,#9BD3F4);color:#06222b;font:700 11px/17px var(--body);text-align:center;letter-spacing:0}
 .chatpg{gap:12px} .chatlog.full{max-height:min(58vh,560px);min-height:180px;overflow:auto}
 .inhead{display:flex;align-items:center;gap:12px}
 .inbox{display:flex;flex-direction:column;gap:6px}
 .inrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:inherit;font:inherit;padding:9px 12px;cursor:pointer}
-.inrow:hover{border-color:var(--accent,#32BAFF)} .inrow.unread{border-color:var(--accent,#32BAFF);background:color-mix(in srgb,var(--accent,#32BAFF) 8%,var(--bg))}
+.inrow:hover{border-color:var(--accent,#9BD3F4)} .inrow.unread{border-color:var(--accent,#9BD3F4);background:color-mix(in srgb,var(--accent,#9BD3F4) 8%,var(--bg))}
 .intxt{flex:1;min-width:0;display:flex;flex-direction:column} .intxt b{font-weight:600} .inrow.unread .intxt b{font-weight:800}
 .intxt small{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .inmeta{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px} .inmeta small{color:var(--muted);font-size:12px}
@@ -1170,34 +1170,34 @@ body.trk-rtt #editWeek,body.trk-rtt #ovOff,body.trk-rtt #ovNT,body.trk-rtt #ovLi
 .liftph button{display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:inherit;font:inherit;cursor:pointer}
 .liftph button b{font:700 18px var(--display);text-transform:uppercase;letter-spacing:.04em}
 .liftph button small{color:var(--muted)}
-.liftph button.on{border-color:var(--accent,#32BAFF);box-shadow:inset 0 -3px 0 var(--accent,#32BAFF)}
+.liftph button.on{border-color:var(--accent,#9BD3F4);box-shadow:inset 0 -3px 0 var(--accent,#9BD3F4)}
 .liftph button.soon:not(.on){opacity:.7;border-style:dashed}
 .lc{display:inline-block;width:14px;height:14px;border-radius:4px;background:var(--line);vertical-align:-2px}
-.lc.some{background:color-mix(in srgb,var(--accent,#32BAFF) 35%,var(--line))} .lc.most{background:color-mix(in srgb,var(--accent,#32BAFF) 70%,var(--line))} .lc.full{background:var(--accent,#32BAFF)}
+.lc.some{background:color-mix(in srgb,var(--accent,#9BD3F4) 35%,var(--line))} .lc.most{background:color-mix(in srgb,var(--accent,#9BD3F4) 70%,var(--line))} .lc.full{background:var(--accent,#9BD3F4)}
 .llegend{font-size:12px;color:var(--muted)} .llegend .lc{margin-left:8px;width:11px;height:11px}
 .ltable{display:flex;flex-direction:column;gap:5px}
 .lhead,.lrowp{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,56px);align-items:center;gap:6px}
-.lhead b{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center} .lhead b.cur{color:var(--accent,#32BAFF)}
+.lhead b{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center} .lhead b.cur{color:var(--accent,#9BD3F4)}
 .lrowp{width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:inherit;font:inherit;padding:6px 8px;cursor:pointer}
-.lrowp:hover{border-color:var(--accent,#32BAFF)}
+.lrowp:hover{border-color:var(--accent,#9BD3F4)}
 .lname{display:flex;align-items:center;gap:8px;min-width:0} .lname b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} .lname .ava{box-shadow:none;flex:none}
-.lwk{display:flex;gap:3px;justify-content:center;padding:4px 0;border-radius:8px} .lwk.cur{background:color-mix(in srgb,var(--accent,#32BAFF) 10%,transparent)}
+.lwk{display:flex;gap:3px;justify-content:center;padding:4px 0;border-radius:8px} .lwk.cur{background:color-mix(in srgb,var(--accent,#9BD3F4) 10%,transparent)}
 @media (max-width:560px){ .lhead,.lrowp{grid-template-columns:repeat(4,1fr)} .lhead>span:first-child{display:none} .lname{grid-column:1/-1} .llegend{display:block;margin-top:4px} }
 #clQ{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:16px}
 .liftwk{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .liftwk button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:inherit;font:inherit;cursor:pointer}
-.liftwk button b{font:700 15px var(--display);text-transform:uppercase} .liftwk button span{display:flex;gap:3px} .liftwk button.on{border-color:var(--accent,#32BAFF);box-shadow:inset 0 -3px 0 var(--accent,#32BAFF)}
+.liftwk button b{font:700 15px var(--display);text-transform:uppercase} .liftwk button span{display:flex;gap:3px} .liftwk button.on{border-color:var(--accent,#9BD3F4);box-shadow:inset 0 -3px 0 var(--accent,#9BD3F4)}
 .lday{border:1px solid var(--line);border-radius:14px;background:var(--bg);padding:0 12px}
 .lday summary{display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer;list-style:none} .lday summary::-webkit-details-marker{display:none}
 .lday summary b{font:700 18px var(--display);text-transform:uppercase} .lday summary .hint{flex:1;margin:0}
 .lex{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)} .lex.empty{opacity:.55}
-.ltag{flex:none;width:30px;font:700 13px var(--display);color:var(--accent,#32BAFF);padding-top:2px}
+.ltag{flex:none;width:30px;font:700 13px var(--display);color:var(--accent,#9BD3F4);padding-top:2px}
 .lsets{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px} .lset{font-size:13px;font-weight:600;padding:2px 8px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-variant-numeric:tabular-nums} .lset.warm{opacity:.7}
 .lnote{margin:5px 0 0;font-size:13px;color:var(--muted);font-style:italic} .dim{color:var(--muted)}
-.ltop{width:100%;border-collapse:collapse;font-size:14px} .ltop th{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px} .ltop td{padding:7px 6px;border-top:1px solid var(--line);font-weight:600} .ltop .num{text-align:right;font-variant-numeric:tabular-nums} .ltop small{color:var(--muted);font-weight:500} .ltop .up{color:var(--accent,#32BAFF);font-style:normal}
+.ltop{width:100%;border-collapse:collapse;font-size:14px} .ltop th{font:600 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:4px 6px} .ltop td{padding:7px 6px;border-top:1px solid var(--line);font-weight:600} .ltop .num{text-align:right;font-variant-numeric:tabular-nums} .ltop small{color:var(--muted);font-weight:500} .ltop .up{color:var(--accent,#9BD3F4);font-style:normal}
 .liftday-m{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px} .liftday-m b{font:700 20px var(--display);text-transform:uppercase}
-.liftbar{height:6px;border-radius:99px;background:var(--line);margin-top:10px;overflow:hidden} .liftbar i{display:block;height:100%;background:var(--accent,#32BAFF);border-radius:99px}
-.liftrow{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--accent,#32BAFF);border-radius:14px;background:var(--bg)}
+.liftbar{height:6px;border-radius:99px;background:var(--line);margin-top:10px;overflow:hidden} .liftbar i{display:block;height:100%;background:var(--accent,#9BD3F4);border-radius:99px}
+.liftrow{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--accent,#9BD3F4);border-radius:14px;background:var(--bg)}
 .liftrow>div{flex:1;min-width:0;display:flex;flex-direction:column} .liftrow small{color:var(--muted)} .liftrow.done{opacity:.8} .lico{font-size:20px}
 .lift3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px} .lift3>div{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--bg)} .lift3 b{display:block;font:700 24px/1 var(--display)} .lift3 span{font-size:12px;color:var(--muted)} .lift3 .warn{border-color:var(--mo,#E9B949)}
 .rep5{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))!important}
@@ -1214,7 +1214,7 @@ body.trk-rtt #editWeek,body.trk-rtt #ovOff,body.trk-rtt #ovNT,body.trk-rtt #ovLi
 /* sign-in screen: on top of everything, and the app itself is not drawn while it is up */
 .gate{z-index:1000}
 body.gated>*:not(#gate){display:none!important}
-body.gated{background:#021F30}
+body.gated{background:#000000}
 .gate[data-mode="loading"] #gForm,.gate[data-mode="loading"] #gTabs{display:none}
 /* pick-your-profile: solid backdrop, so the page behind it cannot be read */
 .sheet.setup .sheet-bd{background:var(--bg)!important;opacity:1!important}
@@ -1292,7 +1292,7 @@ body.gated{background:#021F30}
 .ganote{padding:10px 12px;border-radius:12px;border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg))} .ganote p{margin:4px 0 0;font:500 15px/1.4 var(--body)}
 @media (max-width:480px){ .gakv{grid-template-columns:1fr} }
 .grsel{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:400 16px var(--body);width:100%}
-.gate-logo{background:#03324D;border-radius:16px;padding:12px 14px;width:150px!important;box-sizing:border-box}
+.gate-logo{background:#101418;border-radius:16px;padding:12px 14px;width:150px!important;box-sizing:border-box}
 .cfoot-in img{width:120px!important;height:auto}
 .logo{width:86px}
 [data-injlift],[data-golift],#tab-lift,#tab-schedule{display:none!important}
@@ -1440,6 +1440,129 @@ body.pk-pitcher [data-hday]{cursor:default}
 .tmman{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))!important}
 .tmimp .hint{line-height:1.6}
 .appver{text-align:center;font-size:12px;color:var(--muted);margin:10px 0 18px;opacity:.75}
+
+/* ===================== SANDLOT THEME (Nov 2026) =====================
+   White ruled paper, black ink, Columbia blue (#9BD3F4) as the accent.
+   Headings: Luckiest Guy. Text: Patrick Hand. Always light. */
+:root,:root[data-theme="dark"],:root[data-theme="light"]{
+  --maroon:#101418!important; --maroon-deep:#000!important; --red:#9BD3F4!important; --silver:#5B6470!important; --black:#000!important;
+  --bg:#FFFFFF!important; --surface:#FFFFFF!important; --ink:#101418!important; --muted:#4A535E!important; --line:#101418!important; --accent:#1C6FA3!important;
+  --cb:#9BD3F4; --soft:#E4E7EB;
+  --hi:#101418!important; --hi-ink:#FFFFFF!important; --hi-bg:#E9EBEE!important; --hi-t:#101418!important;
+  --mo:#9BD3F4!important; --mo-ink:#101418!important; --mo-bg:#E3F3FC!important; --mo-t:#1C5F86!important;
+  --lt:#D9DEE3!important; --lt-ink:#101418!important; --lt-bg:#F1F3F5!important; --lt-t:#3D4651!important;
+  --nt:#5B6470!important; --nt-ink:#FFFFFF!important; --nt-bg:#ECEEF1!important; --nt-t:#3D4651!important;
+  --of:#FFFFFF!important; --of-ink:#4A535E!important; --of-bg:#F7F8F9!important; --of-t:#4A535E!important;
+  --display:"Luckiest Guy","Arial Black",sans-serif!important; --body:"Patrick Hand","Comic Sans MS",cursive!important;
+  color-scheme:light!important;
+}
+html{font-synthesis:none}
+body{background-color:#fff;background-image:repeating-linear-gradient(transparent 0 31px,#E4E7EB 31px 32px);font:17px/1.4 var(--body)}
+b,strong{font-weight:400;font-family:var(--display);letter-spacing:.01em}
+/* small labels stay readable: hand lettering, not the heavy marker */
+.lbl,.eyebrow,.eyebrow2,.hint,.pill,.dzc i,.rt-n small,.pk-srw span,.pk-chl,.tmrl,small{font-family:var(--body)!important;letter-spacing:.02em!important;font-weight:400!important}
+.lbl{font-size:15px!important;text-transform:none!important;color:var(--ink)!important}
+.hint{font-size:15px}
+.h2,.toolbar h2,h1,h2,h3{font-weight:400!important;letter-spacing:.01em!important}
+
+/* Header: black band with a torn edge */
+header{background:#101418!important;padding-bottom:6px;clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),74% 100%,40% calc(100% - 8px),0 100%)}
+header .eyebrow{color:#9BD3F4!important}
+.logo{filter:none!important}
+
+/* Tabs: crayon tabs */
+.tabs{gap:6px;padding:0 6px}
+.tabs a{font:400 17px var(--display)!important;letter-spacing:.03em!important;text-transform:none!important;color:#101418!important;background:#fff!important;border:3px solid #101418!important;border-bottom:0!important;border-radius:12px 12px 0 0!important;transform:rotate(-0.8deg)}
+.tabs a:nth-child(even){transform:rotate(0.8deg)}
+.tabs a[aria-current="page"]{background:#101418!important;color:#fff!important}
+.tabbar-line{height:6px!important;background:#101418!important}
+
+/* Cards and panels: thick ink, hard shadow */
+.panel,.card,.kpi,.pk-card,.pk-day,.pk-pick2,.tmcard,.drow,.pk-items li{border:3px solid #101418!important;border-radius:14px 18px 14px 16px!important;box-shadow:4px 5px 0 #101418!important;background:#fff}
+.card:hover{transform:translateY(-2px) rotate(-0.3deg)}
+.pk-items li,.drow{box-shadow:3px 3px 0 #101418!important;border-width:2px!important}
+details.rt,.rt{border-color:#101418!important}
+.rt summary{border-radius:12px}
+
+/* Buttons: black ink, blue shadow */
+.btn{background:#101418!important;color:#fff!important;border:3px solid #101418!important;border-radius:14px!important;font:400 16px var(--display)!important;letter-spacing:.02em;box-shadow:3px 4px 0 #9BD3F4;padding:8px 16px}
+.btn.ghost{background:#fff!important;color:#101418!important;box-shadow:3px 4px 0 #101418}
+.btn.sm{font-size:14px!important;padding:5px 12px!important}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #101418}
+.seg{background:#fff!important;border:3px solid #101418!important;border-radius:14px!important}
+.seg button{font-family:var(--display)!important;font-weight:400!important;color:#101418!important;border-radius:10px!important}
+.seg button[aria-pressed="true"]{background:#101418!important;color:#fff!important;box-shadow:none!important}
+.pk-chip{border:2px solid #101418!important;color:#101418!important;background:#fff!important;font-family:var(--body)!important;font-size:15px!important}
+.pk-chip[aria-pressed="true"]{background:#101418!important;color:#fff!important}
+.pill{border:2px solid #101418!important;background:#fff!important}
+
+/* Inputs */
+input[type=text],input[type=number],input[type=date],input[type=search],input[type=url],select,textarea{background:#fff!important;border:2px solid #101418!important;border-radius:10px!important;font-family:var(--body);font-size:16px}
+
+/* Checkmarks */
+.tick{border:3px solid #101418!important;background:#fff!important;border-radius:8px!important}
+.tick[aria-pressed="true"]{background:#101418!important;color:#fff!important}
+
+/* Dose boxes: Sets / Reps / Weight / Effort */
+.dzc{border:2px solid #101418!important;background:#fff!important;border-radius:9px!important}
+.dzc b{font-family:var(--display)!important;font-weight:400!important}
+.dzw{background:#101418!important} .dzw b{color:#fff!important} .dzw i{color:#9BD3F4!important}
+
+/* Coach note, toast, sheet */
+.pk-cnote{border:3px solid #101418!important;border-left:10px solid #101418!important;background:#fff!important;border-radius:10px!important}
+.toast{background:#101418!important;border:2px solid #9BD3F4!important;font-family:var(--body);font-size:16px!important;border-radius:12px!important}
+.sheet-p{border:3px solid #101418!important;border-bottom:0!important;background:#fff!important;background-image:repeating-linear-gradient(transparent 0 31px,#E4E7EB 31px 32px)!important}
+.appver{font-family:var(--body)}
+
+/* velo bar, footer, hero */
+.vbar i{background:linear-gradient(90deg,#D9DEE3,#9BD3F4 60%,#101418)!important}
+.cfoot,footer.cfoot{background:#101418!important}
+.hero-top{border-bottom:3px solid #101418}
+.li .hero-top,.of .hero-top{color:#101418}
+.of{--c:#FFFFFF}
+
+/* Today card: black, like the mockup */
+.htoday{background:#101418!important;color:#fff!important;border-color:#101418!important;box-shadow:4px 5px 0 #9BD3F4!important}
+.htoday .lbl,.htoday .hint,.htoday .lg-no{color:#D9DEE3!important}
+.htoday .lg-yes{color:#9BD3F4!important}
+.htoday-m b{color:#fff!important}
+.htoday-m .ico .ic,.htoday .ring{color:#9BD3F4!important}
+.htoday .glance>div{background:#101418!important;border:2px solid #fff!important}
+.htoday .glance span{color:#9BD3F4!important;font-family:var(--body)!important;font-size:13px!important;letter-spacing:.03em!important}
+.htoday .glance b{color:#fff!important;font-size:15px}
+.glance i{background:#fff!important;color:#101418!important;box-shadow:none!important;font-family:var(--display)!important;font-weight:400!important}
+.htoday .btn{background:#fff!important;color:#101418!important;box-shadow:3px 4px 0 #9BD3F4!important;border-color:#fff!important}
+.htoday .btn.ghost{background:#101418!important;color:#fff!important;border-color:#fff!important}
+.glance span{font-family:var(--body)!important;font-weight:400!important;font-size:13px!important}
+
+/* Drill rows: Sets / Reps / Weight / Effort on one line */
+.drow{box-shadow:none!important;border-width:2px!important;border-radius:12px!important}
+.drow .dz{display:grid;grid-template-columns:minmax(44px,.6fr) minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1fr);gap:5px}
+.drow .dzc{min-width:0;padding:4px 7px!important}
+.drow .dzc b{font-size:15px!important;line-height:1.15!important;overflow-wrap:anywhere}
+.drow-n,.drow-n a.vid{font-size:18px!important}
+.rt-b .drow{background:#fff}
+
+.drow .dz{grid-template-columns:minmax(40px,.5fr) minmax(0,1.2fr) minmax(0,1.4fr) minmax(64px,1fr)!important}
+.drow .dzc b{font-size:14px!important}
+.drow .dzc:first-child b,.drow .dzc:last-child b{white-space:nowrap;overflow-wrap:normal}
+#detail .lrow{flex-wrap:wrap}
+#detail .lrow .hint{flex:1 1 180px}
+
+/* Tabs on the black band: white outline, active = white with a blue edge */
+.tabs a{background:transparent!important;color:#fff!important;border-color:#fff!important}
+.tabs a[aria-current="page"]{background:#fff!important;color:#101418!important;box-shadow:inset 0 5px 0 #9BD3F4!important}
+.tabbar-line{background:#fff!important;height:4px!important}
+/* High days read black everywhere they're a tile */
+.mc.hi,.wd.hi,.hday.hi,.throwc.hi,button.hi,tr.hi td:first-child{background:#101418!important;color:#fff!important;border-color:#101418!important}
+.mc.hi *,.wd.hi *,.hday.hi *,.throwc.hi *{color:#fff!important}
+.hero.hi .hero-top{background:#101418!important;color:#fff!important}
+.mc.mo,.wd.mo,.hday.mo{background:#E3F3FC!important}
+.mc.of,.wd.of,.hday.of{background:#fff!important;border:2px dashed #101418!important}
+.mc.no,.wd.no,.hday.no{background:#ECEEF1!important}
+
+button.hi *,tr.hi td:first-child,tr.hi td:first-child *{color:#fff!important}
+button.hi .ic{color:#9BD3F4!important}
 </style>
 </head>
 <body>
@@ -2134,7 +2257,7 @@ function pkDose(d){
   const t=pkGrams(String(d||'').trim()); if(!t) return null;
   const p=pkParse(t); if(!p.r&&!p.s) return {note:t};
   const w=[],use=[],eff=p.e?[p.e]:[]; (p.w?p.w.split(/\s*·\s*/):[]).forEach(x=>{ if(!x) return; if(/%/.test(x)) eff.push(x); else if(/\d\s*(g|lbs?|kg|oz)\b/i.test(x)) w.push(x); else use.push(x); });
-  return {s:p.s||'1', r:p.r.replace(/\bea\b\.?/i,'each side'), w:w.join(' · '), use:use.join(' · '), eff:eff.join(' · ')};
+  return {s:p.s||'1', r:p.r.replace(/\bea\b\.?/i,'each side'), w:w.join(' · ').replace(/\//g,'/\u200b'), use:use.join(' · '), eff:eff.join(' · ')};
 }
 function pkDoseHTML(d){
   const x=pkDose(d); if(!x) return '';
@@ -2480,7 +2603,7 @@ const RAPSODO={"retchko":[["FB","Standard 4 Seam",79.6,84.5,8,79.8,84.1,6,2016,1
 const RAPSODO_TEST_UNUSED=[['FB','',85.4,88.0,6,84.1,86.1,5,2105,16.2,9.8,92],['SL','',76.3,78.4,6,75.0,77.2,5,2240,-1.8,-7.4,34],['CB','',71.2,73.0,4,70.1,72.5,4,2310,-12.4,-8.1,71],['CH','',78.0,80.1,5,77.2,79.6,5,1640,10.3,14.2,93]];
 
 // ===== CLEARY: profile picker, bio, fall stats and pitch shapes =====
-const P_COLOR={FB:'#D23B3B','2S':'#E8862A',CT:'#9A6B3F',SL:'#E8B10C',SW:'#C9A100',CB:'#3D7BD9',KC:'#5B5FD6',CH:'#2E9B5F',SP:'#1FA3A3',OT:'#888'};
+const P_COLOR={FB:'#101418','2S':'#4A535E',CT:'#0B4F7A',SL:'#9BD3F4',SW:'#5FB3E6',CB:'#1C6FA3',KC:'#0B4F7A',CH:'#8A96A3',SP:'#C2CBD3',OT:'#B0B7BF'};   // sandlot palette: black, blues, grays
 const rosterOf=st=>st&&st.pid?ROSTER_BY_ID[st.pid]:null;
 const pct=v=>v==null?'—':v+'%';
 const baa=v=>v==null?'—':String(v.toFixed(3)).replace(/^0/,'');
@@ -3204,9 +3327,9 @@ const GRIP_ART={
 const GA_LBL={I:'Index',M:'Middle',R:'Ring',P:'Pinky',T:'Thumb'};
 function gaBall(pose,back,mir,R,cx,cy){ const B=gaBasis(GA_POSE[pose],back); let d='',pen=false;
   GA_SEAM.forEach(p=>{ const z=gaD(p,B.cam); if(z<0.02){ pen=false; return; } const x=gaD(p,B.right)*(mir?-1:1), y=gaD(p,B.up); d+=(pen?'L':'M')+(cx+x*R).toFixed(1)+' '+(cy-y*R).toFixed(1); pen=true; });
-  return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gaBallG)" stroke="#b9b3a4" stroke-width="1"/><path d="${d}" fill="none" stroke="#00A0D2" stroke-width="${(R*.085).toFixed(1)}" stroke-dasharray="${(R*.022).toFixed(1)} ${(R*.05).toFixed(1)}" opacity=".9"/><path d="${d}" fill="none" stroke="#00A0D2" stroke-width="${(R*.018).toFixed(1)}"/>`; }
+  return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gaBallG)" stroke="#b9b3a4" stroke-width="1"/><path d="${d}" fill="none" stroke="#1C6FA3" stroke-width="${(R*.085).toFixed(1)}" stroke-dasharray="${(R*.022).toFixed(1)} ${(R*.05).toFixed(1)}" opacity=".9"/><path d="${d}" fill="none" stroke="#1C6FA3" stroke-width="${(R*.018).toFixed(1)}"/>`; }
 function gaFinger(k,f,R,cx,cy,mir,ghost,press){ const sx=mir?-1:1, x=cx+f.x*sx*R, y=cy-f.y*R, a=(f.a||0)*sx, w=f.w*R, L=f.len*R, r=w/2;
-  const lab=`<circle cx="${x.toFixed(1)}" cy="${(y+ (f.spike?0:r*.9)).toFixed(1)}" r="${(R*.115).toFixed(1)}" fill="${press?'#00A0D2':'#07202E'}" ${ghost?'opacity=".55"':''}/><text x="${x.toFixed(1)}" y="${(y+(f.spike?0:r*.9)+R*.045).toFixed(1)}" text-anchor="middle" font-size="${(R*.15).toFixed(1)}" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">${k}</text>`;
+  const lab=`<circle cx="${x.toFixed(1)}" cy="${(y+ (f.spike?0:r*.9)).toFixed(1)}" r="${(R*.115).toFixed(1)}" fill="${press?'#1C6FA3':'#07202E'}" ${ghost?'opacity=".55"':''}/><text x="${x.toFixed(1)}" y="${(y+(f.spike?0:r*.9)+R*.045).toFixed(1)}" text-anchor="middle" font-size="${(R*.15).toFixed(1)}" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">${k}</text>`;
   if(f.spike) return `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(R*.2).toFixed(1)}" fill="#e9b996" stroke="#8a5a3c" stroke-width="1.2"/><path d="M${(x-R*.2).toFixed(1)} ${(y+R*.05).toFixed(1)} q${(R*.2).toFixed(1)} ${(-R*.34).toFixed(1)} ${(R*.4).toFixed(1)} 0" fill="none" stroke="#8a5a3c" stroke-width="1.2"/>${lab}</g>`;
   const body=`<rect x="${(x-r).toFixed(1)}" y="${(y-r*.2).toFixed(1)}" width="${w.toFixed(1)}" height="${L.toFixed(1)}" rx="${r.toFixed(1)}" transform="rotate(${a} ${x.toFixed(1)} ${y.toFixed(1)})" `;
   return ghost? `<g>${body}fill="none" stroke="#07202E" stroke-width="1.4" stroke-dasharray="4 4" opacity=".55"/>${lab}</g>`
@@ -3229,7 +3352,7 @@ ${gaView(key,false,mir,86,118,122,id)}${gaView(key,true,mir,52,290,104,id)}
 <text x="290" y="196" text-anchor="middle" font-size="10.5" fill="#9fb4d6" font-family="system-ui,sans-serif">${mir?'Left':'Right'}-handed pitcher</text><text x="290" y="211" text-anchor="middle" font-size="10.5" fill="#9fb4d6" font-family="system-ui,sans-serif">Red dot = pressure finger</text><text x="290" y="226" text-anchor="middle" font-size="10.5" fill="#9fb4d6" font-family="system-ui,sans-serif">Dashed = other side of ball</text></svg>`; }
 // Typical shape from the pitcher's eyes. x: + = arm side, y: + = ride, - = drop (inches).
 function gripMove(key,hand){ const g=GRIP_ART[key]; if(!g||!g.mv) return ''; const s=hand==='L'?-1:1, x=60+g.mv[0]*s*2.3, y=50-g.mv[1]*2.1;
-  return `<svg viewBox="0 0 120 100" class="gamove" role="img" aria-label="Typical movement"><rect width="120" height="100" rx="10" fill="#0F2B3B"/><line x1="60" y1="8" x2="60" y2="92" stroke="#35507d"/><line x1="10" y1="50" x2="110" y2="50" stroke="#35507d"/><text x="60" y="98" text-anchor="middle" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">drop</text><text x="60" y="8" text-anchor="middle" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">ride</text><text x="${hand==='L'?12:108}" y="47" text-anchor="${hand==='L'?'start':'end'}" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">arm side</text><text x="${hand==='L'?108:12}" y="47" text-anchor="${hand==='L'?'end':'start'}" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">glove side</text><line x1="60" y1="50" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#00A0D2" stroke-width="2"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="#00A0D2" stroke="#fff" stroke-width="1.5"/></svg>`; }
+  return `<svg viewBox="0 0 120 100" class="gamove" role="img" aria-label="Typical movement"><rect width="120" height="100" rx="10" fill="#0F2B3B"/><line x1="60" y1="8" x2="60" y2="92" stroke="#35507d"/><line x1="10" y1="50" x2="110" y2="50" stroke="#35507d"/><text x="60" y="98" text-anchor="middle" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">drop</text><text x="60" y="8" text-anchor="middle" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">ride</text><text x="${hand==='L'?12:108}" y="47" text-anchor="${hand==='L'?'start':'end'}" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">arm side</text><text x="${hand==='L'?108:12}" y="47" text-anchor="${hand==='L'?'end':'start'}" font-size="7" fill="#9fb4d6" font-family="system-ui,sans-serif">glove side</text><line x1="60" y1="50" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#1C6FA3" stroke-width="2"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="#1C6FA3" stroke="#fff" stroke-width="1.5"/></svg>`; }
 
 // The in-app grip guide: one library entry per picture, nothing to open outside the app.
 const GA_TYPE={ffOut:'FB',ffIn:'FB',ffOff:'FB',two:'2S',one:'2S',circle:'CH',three:'CH',vulcan:'CH',split:'SP',kick:'CH',curve:'CB',spike:'KC',slider:'SL',sweeper:'SW',cutter:'CT'};
@@ -3280,7 +3403,7 @@ function gaSpin(key,hand,yaw,pitch){ const g=GRIP_ART[key]; if(!g) return ''; co
   const pr=v=>{ const r=gaRot(v,yaw,pitch); return [cx+r[0]*R, cy-r[1]*R, r[2]]; };
   const seg=(pts,vis)=>{ let d='',pen=false; pts.forEach(p=>{ if((p[2]>0.02)!==vis){ pen=false; return; } d+=(pen?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1); pen=true; }); return d; };
   const seam=GA_SEAM.map(p=>pr([gaD(p,B.right)*sx,gaD(p,B.up),gaD(p,B.cam)])), sf=seg(seam,true), sb2=seg(seam,false);
-  let out=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gaBallG)" stroke="#b9b3a4"/><path d="${sb2}" fill="none" stroke="#00A0D2" stroke-width="1" stroke-dasharray="2 5" opacity=".28"/><path d="${sf}" fill="none" stroke="#00A0D2" stroke-width="9.5" stroke-dasharray="2.4 5.6" opacity=".9"/><path d="${sf}" fill="none" stroke="#00A0D2" stroke-width="2"/>`;
+  let out=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gaBallG)" stroke="#b9b3a4"/><path d="${sb2}" fill="none" stroke="#1C6FA3" stroke-width="1" stroke-dasharray="2 5" opacity=".28"/><path d="${sf}" fill="none" stroke="#1C6FA3" stroke-width="9.5" stroke-dasharray="2.4 5.6" opacity=".9"/><path d="${sf}" fill="none" stroke="#1C6FA3" stroke-width="2"/>`;
   const items=[];
   const finger=(k,f,back)=>{ const fx=f.x*sx, fy=f.y, zz=Math.sqrt(Math.max(0.02,1-fx*fx-fy*fy))*(back?-1:1), T=gaN([fx,fy,zz]), a=(f.a||0)*sx*Math.PI/180*(back?-1:1);
     let d=[-Math.sin(a),-Math.cos(a),0]; const dt=gaD(d,T); let t=gaN([d[0]-dt*T[0],d[1]-dt*T[1],d[2]-dt*T[2]]);
@@ -3291,7 +3414,7 @@ function gaSpin(key,hand,yaw,pitch){ const g=GRIP_ART[key]; if(!g) return ''; co
     else { const f1=seg(pts,true), b1=seg(pts,false);
       if(b1) h+=`<path d="${b1}" fill="none" stroke="#07202E" stroke-width="${(w*.9).toFixed(1)}" stroke-linecap="round" opacity=".1"/><path d="${b1}" fill="none" stroke="#07202E" stroke-width="1.4" stroke-dasharray="4 4" opacity=".5"/>`;
       if(f1) h+=`<path d="${f1}" fill="none" stroke="#8a5a3c" stroke-width="${(w+2.6).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/><path d="${f1}" fill="none" stroke="#e9b996" stroke-width="${w.toFixed(1)}" stroke-linecap="round" stroke-linejoin="round" opacity=".86"/>`; }
-    const lp=f.spike?tip:pts[3]; h+=`<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="13" fill="${press?'#00A0D2':'#07202E'}" opacity="${lp[2]>0.02?1:.45}"/><text x="${lp[0].toFixed(1)}" y="${(lp[1]+5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="system-ui,sans-serif" opacity="${lp[2]>0.02?1:.6}">${k}</text>`;
+    const lp=f.spike?tip:pts[3]; h+=`<circle cx="${lp[0].toFixed(1)}" cy="${lp[1].toFixed(1)}" r="13" fill="${press?'#1C6FA3':'#07202E'}" opacity="${lp[2]>0.02?1:.45}"/><text x="${lp[0].toFixed(1)}" y="${(lp[1]+5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="800" fill="#fff" font-family="system-ui,sans-serif" opacity="${lp[2]>0.02?1:.6}">${k}</text>`;
     items.push([tip[2],h]); };
   ['P','R','I','M'].forEach(k=>{ if(g[k]) finger(k,g[k],false); });
   if(g.T) finger('T',Object.assign({},g.T,{w:.34}),true);
@@ -4137,13 +4260,13 @@ const DAY_INFO = {
             how:['Do the full warm-up first: mobility, pre-throw, then plyo.','Throw with intent and work on command.','Stick to the pitch count on your card.','Do your post-throw arm care afterward.'] },
   sb:     { t:'Marty’s Short Box day', what:'You still throw off the mound, but your catcher sets up 10–15 feet in front of home plate and you throw at about 80% effort (RPE). It builds feel and command without a full bullpen.',
             how:['Do the full warm-up first: mobility, pre-throw, then plyo.','Throw off the mound to a catcher 10–15 ft in front of home plate.','About 80% effort. Smooth and in control, not max intent.','Stick to the pitch count and follow your bullpen script.','Do your post-throw arm care afterward.'] },
-  toss:   { t:'High-intensity throw', what:'Your hard throwing day when you aren\'t on the mound. It keeps your arm strong between mound days.',
-            how:['Warm up fully, then build up your distance step by step.','Work out to long distance and finish with hard, on-line throws.','Do your post-throw arm care afterward.'] },
+  toss:   { t:'High-intensity throw', what:'Your high throw day when you aren\'t on the mound. It keeps your arm strong between mound days.',
+            how:['Warm up fully, then build up your distance step by step.','Work out to long distance and finish with high-effort, on-line throws.','Do your post-throw arm care afterward.'] },
   mod:    { t:'Moderate day', what:'A firm but controlled throwing day. It keeps your arm building, or gets it ready for a big day tomorrow.',
             how:['Firm throws, under control. Not game intent.','Stay in the distance and throw count below.','Finish every routine on the card.'] },
-  light:  { t:'Light day', what:'An easy throwing day for recovery and feel. Usually it\'s the day after a hard day, or the days in between.',
+  light:  { t:'Light day', what:'An easy throwing day for recovery and feel. Usually it\'s the day after a high day, or the days in between.',
             how:['Easy, loose catch play. No max-effort throws.','Stay in the distance and throw count below.','Still finish every routine on the card. Arm care matters most on these days.'] },
-  nothrow:{ t:'No-throw day', what:'No throwing today. Your arm rests so it\'s fresh for the next hard day.',
+  nothrow:{ t:'No-throw day', what:'No throwing today. Your arm rests so it\'s fresh for the next high day.',
             how:['Don\'t pick up a ball.','Still do your mobility (and conditioning if it\'s on the card).'] },
   off:    { t:'Off day', what:'A full day off. No throwing and no training.',
             how:['Rest, eat well and sleep.','Sore is normal. Pain is not. If something hurts, tell your coach.'] }
@@ -4159,7 +4282,7 @@ const ROUTINE_INFO = {
 const HELP = [
   ['What do I do each day?', `<p>Open <b>Training Calendar</b>. It lists today's work in order: <b>1. Before you throw</b> (mobility, pre-throw, plyo), <b>2. Throw</b>, <b>3. After you throw</b> (rotator cuff, scap, mobility), then conditioning if it's on your card. Tap the ✓ on each routine when it's done.</p>`],
   ['How do I set my bullpen and off days?', `<p>Your coach sets your week, including bullpens, Marty’s Short Boxes, lives and off days. Message him in <b>Chat</b> if something needs to change.</p>`],
-  ['What do the colors mean?', `<ul><li><b>Red:</b> high intensity (live, bullpen, Marty’s Short Box or a hard throwing day)</li><li><b>Yellow:</b> moderate</li><li><b>Green:</b> light</li><li><b>Blue:</b> no throw</li><li><b>Gray:</b> off</li></ul><p>Tap any color in the color key for more.</p>`],
+  ['What do the colors mean?', `<ul><li><b>Black:</b> high (live, bullpen, Marty’s Short Box or a high throw day)</li><li><b>Columbia blue:</b> moderate</li><li><b>Light gray:</b> light</li><li><b>Slate gray:</b> no throw</li><li><b>White, dashed:</b> off</li></ul><p>Tap any color in the color key for more.</p>`],
   ['How do I log my day?', `<p>Tap <b>Log today</b> on Home, or open the <b>Log</b> tab. Fill in how hard you threw, how many throws or pitches, how your arm feels, any soreness or pain, and a note on how you felt. It takes about 30 seconds.</p>`],
   ["I can't throw today. What do I do?", `<p>Message your coach in <b>Chat</b> and he will change your day. Don't make up a missed day by doubling up the next day.</p>`],
   ['Sore or pain: what\'s the difference?', `<p><b>Just sore</b> (tight, achy, normal after throwing) is tracked so you and your coach can see it. <b>Pain</b> means sharp, pinching or pain that won't go away. Stop throwing, tell your coach or athletic trainer, and log it as Pain so your coach sees it right away.</p>`],
@@ -4913,7 +5036,7 @@ function whyDay(p,k,byCoachDay){
     case 'live': return 'Live day. You face hitters, and the rest of your week is built around today.';
     case 'pen':  return p.auto ? `The plan put your bullpen here, 3 days ${isSP?'before':'after'} your live.` : 'Your bullpen day. The rest of your week is built around it.';
     case 'sb':   return 'Marty’s Short Box day: off the mound to a catcher 10–15 ft in front of home plate, at about 80% effort.';
-    case 'toss': return `You only have one mound day a week right now, so you get one hard throw without the mound, 3 days before ${nxt}.`;
+    case 'toss': return `You only have one mound day a week right now, so you get one high throw without the mound, 3 days before ${nxt}.`;
     case 'nothrow':
       if(p.tag==='afterPen') return 'Rest day after your bullpen, so your arm is fresh for your live.';
       if(p.tag==='preMound') return `Your mound days are only 3 days apart, so your arm rests the day before ${nxt}.`;
@@ -4921,14 +5044,14 @@ function whyDay(p,k,byCoachDay){
     case 'mod':
       if(p.tag==='preLive') return `Tomorrow is ${nxt}. A moderate day gets your arm ready without tiring it.`;
       if(p.tag==='prePen') return `Tomorrow is ${nxt}. A moderate day gets the arm ready.`;
-      if(p.tag==='mid') return `Middle of the week, between hard days. A moderate day keeps your arm building before ${nxt}.`;
+      if(p.tag==='mid') return `Middle of the week, between high days. A moderate day keeps your arm building before ${nxt}.`;
       return 'Your one moderate day in the standard build week.';
     case 'light':
-      if(p.tag==='afterHigh') return `Recovery day after ${pv?'your '+esc(lcLabel(label(pv)))+' yesterday':'yesterday\'s hard day'}. Easy catch play to loosen up.`;
+      if(p.tag==='afterHigh') return `Recovery day after ${pv?'your '+esc(lcLabel(label(pv)))+' yesterday':'yesterday\'s high day'}. Easy catch play to loosen up.`;
       if(p.tag==='preLive') return `Tomorrow is ${nxt}. Keep it light the day before so the arm is fresh.`;
       if(p.tag==='prePen') return `Tomorrow is ${nxt}. Keep it light today so you're fresh on the mound.`;
       if(p.tag==='build') return 'Easy catch play in the standard build week.';
-      return `Easy catch play between hard days. It keeps your arm moving without adding stress before ${nxt}.`;
+      return `Easy catch play between high days. It keeps your arm moving without adding stress before ${nxt}.`;
     case 'off':
       if(p.tag==='build') return 'Weekend off in the standard build week.';
       return 'Off day. Full rest.';
@@ -4944,11 +5067,11 @@ function renderWhyWeek(){
   let t;
   if(!plans.length) t='Nothing is scheduled this week.';
   else if(!hard.length && plans.every(([,p])=>p.tag==='build'||p.kind==='off')) t='<b>Why this week looks like this:</b> no throwing days are picked for this week, so you\'re on the staff\'s standard build week.';
-  else if(!hard.length) t='<b>Why this week looks like this:</b> there are no hard days this week, so it\'s all light, moderate and rest days.';
+  else if(!hard.length) t='<b>Why this week looks like this:</b> there are no high days this week, so it\'s all light, moderate and rest days.';
   else {
     const names=hard.map(([k,p])=>`<b>${esc(label(p))} ${DOW[parse(k).getDay()]}</b>${p.auto?' (placed by the plan)':''}`);
     const list=names.length>1?names.slice(0,-1).join(', ')+' and '+names[names.length-1]:names[0];
-    t=`<b>Why this week looks like this:</b> it's built around your ${list}. The day after a hard day is light recovery, the day before gets you fresh or primed, and the days in between are easy catch play.`;
+    t=`<b>Why this week looks like this:</b> it's built around your ${list}. The day after a high day is light recovery, the day before gets you fresh or primed, and the days in between are easy catch play.`;
   }
   if(coachSet) t+=' <b>Your coach set this week.</b>';
   el.innerHTML=t;
@@ -4961,7 +5084,7 @@ function upNext(k){
   const card=(lbl,kk,p,sub)=>`<button type="button" class="${RX[p.intensity].cls}" data-goto="${kk}">${kindIcon(p.kind)}<span><small>${lbl}</small><b>${esc(label(p))}</b><em>${sub}</em></span></button>`;
   const out=[];
   if(tp) out.push(card(k===TODAY?'Tomorrow':'Next day',tk,tp,`${DOW[parse(tk).getDay()]} ${parse(tk).getMonth()+1}/${parse(tk).getDate()}`));
-  if(nx) out.push(card(tp&&HIGH.includes(tp.kind)?'Hard day after':'Next hard day',nx.k,nx.p,`${DOW[parse(nx.k).getDay()]} · in ${nx.n} days`));
+  if(nx) out.push(card(tp&&HIGH.includes(tp.kind)?'High day after':'Next high day',nx.k,nx.p,`${DOW[parse(nx.k).getDay()]} · in ${nx.n} days`));
   return out.length?`<div class="upnext">${out.join('')}</div>`:'';
 }
 
@@ -5236,7 +5359,7 @@ const EQUIP={
   'Conditioning 4':['Treadmill']
 };
 const PLYO_W={Green:1000,Blue:450,Red:225,Yellow:150,Gray:100};
-const PLYO_HEX={Green:'#2E8B57',Blue:'#2F6FD1',Red:'#D0352B',Yellow:'#E8B10C',Gray:'#98999B'};
+const PLYO_HEX={Green:'#2E8B57',Blue:'#2F6FD1',Red:'#D0352B',Yellow:'#E8B10C',Gray:'#5B6470'};
 const plyoText=s=>s.replace(/\b(Green|Blue|Red|Yellow|Gray)\b/g,(m)=>`${m} ${PLYO_W[m]}g`);
 const SECTION_OF=n=>n==='Nerve Glides'?'Nerve glides':/^Mobility [A-D]$/.test(n)?'Mobility':/^(Pre-Throw|Med Ball|Dynamic Warm Up)/.test(n)?'Pre-Throw':/^Plyo/.test(n)?'Plyo':/^Conditioning/.test(n)?'Conditioning':'Post-throw';
 const RX = {
@@ -6544,7 +6667,7 @@ setInterval(()=>{ const now=new Date(); now.setHours(0,0,0,0); if(ymd(now)!==TOD
 .vhacct .vhrow b{display:block;font-size:15px}
 .vhacct .vhrow span{display:block;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
 .vhacct .vhtag{font:700 11px var(--display);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);margin-left:6px}
-.vhacct .vhtag.c{border-color:#32BAFF;color:#32BAFF}
+.vhacct .vhtag.c{border-color:#9BD3F4;color:#9BD3F4}
 .vhacct .vhrow button{min-height:40px}
 .vhacct p.hint{margin:0;padding:0 14px 12px}
 </style>
@@ -6580,7 +6703,7 @@ document.addEventListener('click',async e=>{
 <style>
 .vhoff .vhdays{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0 4px}
 .vhoff .vhdays button{min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:700 14px var(--display);letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
-.vhoff .vhdays button[aria-pressed="true"]{background:#00A0D2;border-color:#00A0D2;color:#fff}
+.vhoff .vhdays button[aria-pressed="true"]{background:#1C6FA3;border-color:#1C6FA3;color:#fff}
 .vhoff .vhdates{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .vhoff .vhdates span{display:inline-flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;border-radius:999px;border:1px solid var(--line);font-size:13.5px}
 .vhoff .vhdates button{width:28px;height:28px;border-radius:50%;border:0;background:var(--bg);color:var(--ink);font-size:16px;cursor:pointer}
@@ -6675,7 +6798,7 @@ function renderTeamInt(){
   const offDays=(teamOffCfg()||{}).days||[];
   const dirty=!vhIntSame(VH_INT,cur.days);
   const st=parse(vhOffStart()), when=vhOffStart()===TODAY?'today':VH_DOWL[st.getDay()]+' '+(st.getMonth()+1)+'/'+st.getDate();
-  el.innerHTML=`<summary><span><h2 class="h2">Program week by intensity</h2><small>${esc(vhIntShort(cur))}${dirty?' · unsaved changes':''}</small></span></summary><div class="stack cvdd-b"><p class="hint" style="margin-top:0">Set how hard each day of the week is for everyone. Mound days move off any day set below high, and a day set to high with no mound day becomes a high-intensity throw. Starts ${when}; this week and past weeks don't change. Off days and a pitcher's own off-day picks still come first.</p>
+  el.innerHTML=`<summary><span><h2 class="h2">Program week by intensity</h2><small>${esc(vhIntShort(cur))}${dirty?' · unsaved changes':''}</small></span></summary><div class="stack cvdd-b"><p class="hint" style="margin-top:0">Set the intensity of each day of the week for everyone. Mound days move off any day set below high, and a day set to high with no mound day becomes a high-intensity throw. Starts ${when}; this week and past weeks don't change. Off days and a pitcher's own off-day picks still come first.</p>
     <div class="vhrows">${[0,1,2,3,4,5,6].map(i=>offDays.includes(i)
       ?`<div class="vhr"><b>${VH_DOW[i]}</b><span class="vhoffrow">Program off day</span></div>`
       :`<div class="vhr"><b>${VH_DOW[i]}</b><div class="vhseg" role="group" aria-label="${VH_DOWL[i]} intensity">${VH_INTS.map(([v,t])=>`<button type="button" data-vhint="${i}" data-v="${v}" aria-pressed="${(VH_INT[i]||'')===v}">${t}</button>`).join('')}</div></div>`).join('')}</div>
@@ -6720,6 +6843,6 @@ function renderAccounts(){
 }
 </script>
 
-<p class="appver">Version: Nov 24, 2026 · 5:15 PM · two test pitchers (RHP + LHP)</p>
+<p class="appver">Version: Nov 24, 2026 · 8:30 PM · Sandlot design</p>
 </body>
 </html>
